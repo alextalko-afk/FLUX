@@ -6,9 +6,8 @@ services:
     name: flux-api
     runtime: docker
     plan: free
-    dockerfilePath: docker/server/Dockerfile
+    dockerfilePath: docker/server/Dockerfile.render
     dockerContext: .
-    dockerTarget: render
     healthCheckPath: /api/v1/health
     envVars:
       - { key: NODE_ENV, value: production }

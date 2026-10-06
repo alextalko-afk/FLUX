@@ -48,7 +48,7 @@
       "tar": "6.2.1",
       "multer": ">=2.3.0",
       "lodash": ">=4.18.0",
-      "@xmldom/xmldom": ">=0.8.15",
+      "@xmldom/xmldom": "0.8.10",
       "postcss": ">=8.5.18",
       "image-size": "1.2.1"
     }

@@ -1,4 +1,4 @@
-# Render Blueprint: the FLUX API as one free web service. Postgres lives in Neon, Redis in Upstash,
+# Render Blueprint: the FLUX API as one free web service. Postgres lives in Neon, Redis is a free Render Key Value,
 # files in an S3-compatible bucket (Cloudflare R2 / Backblaze B2). Values marked `sync: false` are asked for
 # in the Render dashboard once and never stored in the repository.
 services:
@@ -15,7 +15,8 @@ services:
       - { key: TRUST_PROXY, value: "1" }
       - { key: FRONTEND_URL, value: https://fluxmess.netlify.app }
       - { key: DATABASE_URL, sync: false }
-      - { key: REDIS_URL, sync: false }
+      - key: REDIS_URL
+        fromService: { type: keyvalue, name: flux-redis, property: connectionString }
       - { key: JWT_ACCESS_SECRET, generateValue: true }
       - { key: JWT_REFRESH_SECRET, generateValue: true }
       - { key: PASSCODE_PEPPER, generateValue: true }
@@ -26,3 +27,9 @@ services:
       - { key: S3_SECRET_KEY, sync: false }
       - { key: S3_REGION, value: auto }
       - { key: S3_FORCE_PATH_STYLE, value: "true" }
+
+  - type: keyvalue
+    name: flux-redis
+    plan: free
+    maxmemoryPolicy: noeviction
+    ipAllowList: [] # internal connections only

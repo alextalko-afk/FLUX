@@ -36,7 +36,13 @@ jobs:
         env:
           SIDELOAD: '1'
           EXPO_PUBLIC_API_URL: ${{ inputs.api_url || vars.FLUX_API_URL || 'https://libs-root-budapest-curtis.trycloudflare.com/api/v1' }}
-        run: npx expo prebuild --platform ios --clean
+          # The step above edits .npmrc, which makes Expo ask about uncommitted changes and quit in CI.
+          EXPO_NO_GIT_STATUS: '1'
+          CI: '1'
+        run: |
+          npx expo prebuild --platform ios --clean --no-install
+          test -d ios || { echo 'prebuild did not create ios/'; exit 1; }
+          cd ios && pod install
 
       - name: Build without signing
         working-directory: apps/mobile/ios

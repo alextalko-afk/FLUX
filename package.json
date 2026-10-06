@@ -45,7 +45,7 @@
   "packageManager": "pnpm@9.12.0",
   "pnpm": {
     "overrides": {
-      "tar": ">=7.5.21",
+      "tar": "6.2.1",
       "multer": ">=2.3.0",
       "lodash": ">=4.18.0",
       "@xmldom/xmldom": ">=0.8.15",

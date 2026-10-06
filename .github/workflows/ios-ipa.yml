@@ -3,11 +3,14 @@ name: iOS IPA (unsigned)
 # Builds FLUX for iPhone on a free GitHub macOS runner. The .ipa is unsigned: install it from Windows with
 # Sideloadly (free Apple ID, valid for 7 days) or AltStore. No paid Apple Developer account is needed.
 on:
+  push:
+    branches: [main]
+    paths: ['apps/mobile/**', '.github/workflows/ios-ipa.yml']
   workflow_dispatch:
     inputs:
       api_url:
         description: 'FLUX server API URL reachable from the phone, e.g. https://flux.example.com/api/v1'
-        required: true
+        required: false
         type: string
 
 jobs:
@@ -32,14 +35,14 @@ jobs:
         working-directory: apps/mobile
         env:
           SIDELOAD: '1'
-          EXPO_PUBLIC_API_URL: ${{ inputs.api_url }}
+          EXPO_PUBLIC_API_URL: ${{ inputs.api_url || vars.FLUX_API_URL || 'https://libs-root-budapest-curtis.trycloudflare.com/api/v1' }}
         run: npx expo prebuild --platform ios --clean
 
       - name: Build without signing
         working-directory: apps/mobile/ios
         env:
           SIDELOAD: '1'
-          EXPO_PUBLIC_API_URL: ${{ inputs.api_url }}
+          EXPO_PUBLIC_API_URL: ${{ inputs.api_url || vars.FLUX_API_URL || 'https://libs-root-budapest-curtis.trycloudflare.com/api/v1' }}
         run: |
           WORKSPACE=$(ls -d *.xcworkspace | head -1)
           SCHEME="${WORKSPACE%.xcworkspace}"

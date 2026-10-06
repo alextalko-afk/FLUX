@@ -5,7 +5,7 @@ name: iOS IPA (unsigned)
 on:
   push:
     branches: [main]
-    paths: ['apps/mobile/**', '.github/workflows/ios-ipa.yml']
+    paths: ['apps/mobile/**', 'packages/**', 'package.json', 'pnpm-lock.yaml', '.github/workflows/ios-ipa.yml']
   workflow_dispatch:
     inputs:
       api_url:

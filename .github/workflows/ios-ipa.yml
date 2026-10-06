@@ -27,8 +27,8 @@ jobs:
           node-version: 22
           cache: pnpm
       # React Native's native build wants real folders, not pnpm's symlinks.
-      - run: echo "node-linker=hoisted" >> .npmrc
-      - run: pnpm install --no-frozen-lockfile
+      # (as a flag, not in .npmrc: npm warns about the unknown key and that breaks the template download in expo prebuild)
+      - run: pnpm install --no-frozen-lockfile --config.node-linker=hoisted
       - run: pnpm --filter @FLUX/shared run build
 
       - name: Generate the Xcode project

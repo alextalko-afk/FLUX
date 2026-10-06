@@ -28,3 +28,10 @@ COPY --from=builder /app /app
 EXPOSE 3000
 USER node
 CMD ["node", "apps/server/dist/main.js"]
+
+# Hosts without a separate migration job (Render free): apply migrations, then start the API.
+FROM builder AS render
+ENV NODE_ENV=production
+RUN apk add --no-cache ffmpeg openssl
+EXPOSE 3000
+CMD ["sh", "-c", "pnpm --filter @FLUX/server exec prisma migrate deploy && node apps/server/dist/main.js"]

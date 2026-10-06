@@ -1,0 +1,21 @@
+# FLUX web client on Netlify. /api is proxied to the FLUX server (same-origin for the browser, so cookies and
+# CSRF work); WebSocket cannot go through Netlify, so the client connects to VITE_WS_ORIGIN directly.
+[build]
+  command = "pnpm run build:cloudflare"
+  publish = "apps/web/dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+  PNPM_VERSION = "9.12.0"
+  VITE_WS_ORIGIN = "wss://libs-root-budapest-curtis.trycloudflare.com"
+
+[[redirects]]
+  from = "/api/*"
+  to = "https://libs-root-budapest-curtis.trycloudflare.com/api/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

@@ -78,8 +78,9 @@ class RealtimeClient {
       return;
     }
 
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//${window.location.host}/ws?ticket=${encodeURIComponent(ticket)}`;
+    // Hosts that cannot proxy WebSocket (Netlify) point the client at the server directly.
+    const base = import.meta.env.VITE_WS_ORIGIN || `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}`;
+    const wsUrl = `${base}/ws?ticket=${encodeURIComponent(ticket)}`;
 
     this.ws = new WebSocket(wsUrl);
 

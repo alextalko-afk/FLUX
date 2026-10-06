@@ -28,7 +28,8 @@
     "docker:down": "docker compose down",
     "docker:logs": "docker compose logs -f",
     "install:all": "bash ./scripts/install-all.sh",
-    "reset": "bash ./scripts/reset-project.sh"
+    "reset": "bash ./scripts/reset-project.sh",
+    "build:cloudflare": "pnpm --filter @FLUX/shared run build && pnpm --filter @FLUX/web build"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^7.1.0",

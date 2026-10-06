@@ -7,12 +7,19 @@ export class RedisService implements OnModuleDestroy {
   private readonly client: Redis;
 
   constructor(private configService: ConfigService) {
-    this.client = new Redis({
-      host: this.configService.get<string>('redis.host', 'localhost'),
-      port: this.configService.get<number>('redis.port', 6379),
+    const options = {
       lazyConnect: true,
-      retryStrategy: (times) => Math.min(times * 50, 2000),
-    });
+      retryStrategy: (times: number) => Math.min(times * 50, 2000),
+    };
+    // A hosted Redis is given as one URL (rediss:// for TLS); host and port stay for the local setup.
+    const url = process.env.REDIS_URL;
+    this.client = url
+      ? new Redis(url, options)
+      : new Redis({
+          host: this.configService.get<string>('redis.host', 'localhost'),
+          port: this.configService.get<number>('redis.port', 6379),
+          ...options,
+        });
   }
 
   getClient(): Redis {

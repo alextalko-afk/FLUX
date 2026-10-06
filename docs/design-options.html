@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FLUX: три направления дизайна</title>
+<style>
+  :root { font-family: Inter, 'Segoe UI', system-ui, sans-serif; }
+  * { box-sizing: border-box; margin: 0; }
+  body { background: #e9edf3; padding: 28px 20px 60px; color: #17202e; }
+  h1 { font-size: 22px; margin-bottom: 6px; }
+  .lead { color: #5b6677; margin-bottom: 26px; font-size: 14px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(560px, 1fr)); gap: 28px; }
+  .tag { font-weight: 700; margin: 0 0 4px; font-size: 16px; }
+  .why { font-size: 13px; color: #5b6677; margin-bottom: 10px; line-height: 1.45; }
+
+  .app { display: grid; grid-template-columns: 250px 1fr; height: 440px; border-radius: 16px; overflow: hidden;
+         background: var(--panel); color: var(--fg); box-shadow: 0 12px 40px rgba(20,30,50,.18); border: 1px solid var(--line); }
+  .list { border-right: 1px solid var(--line); display: flex; flex-direction: column; background: var(--panel); }
+  .search { margin: 12px; padding: 9px 14px; border-radius: 999px; background: var(--sunken); color: var(--mute); font-size: 13px; }
+  .chat { display: flex; gap: 11px; padding: var(--rowpad); align-items: center; margin: 0 8px; border-radius: var(--rowr); }
+  .chat.active { background: var(--active); color: var(--activefg); }
+  .av { width: var(--av); height: var(--av); border-radius: 50%; display: grid; place-items: center; color: #fff; font-weight: 700; font-size: 14px; flex: none; }
+  .meta { min-width: 0; flex: 1; }
+  .name { font-weight: 600; font-size: 14px; display: flex; justify-content: space-between; gap: 6px; }
+  .name small { font-weight: 400; font-size: 11px; color: var(--mute); }
+  .chat.active .name small, .chat.active .prev { color: inherit; opacity: .85; }
+  .prev { font-size: 13px; color: var(--mute); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; justify-content: space-between; gap: 6px; }
+  .badge { background: var(--accent); color: #fff; border-radius: 999px; font-size: 11px; font-weight: 700; padding: 1px 7px; }
+  .chat.active .badge { background: #fff; color: var(--accent); }
+
+  .main { display: flex; flex-direction: column; background: var(--wall); position: relative; }
+  .head { padding: 10px 16px; background: var(--head); border-bottom: 1px solid var(--line); display: flex; gap: 11px; align-items: center; }
+  .head b { font-size: 15px; display: block; }
+  .head span { font-size: 12px; color: var(--mute); }
+  .msgs { flex: 1; padding: 16px 18px; display: flex; flex-direction: column; gap: 6px; overflow: hidden; }
+  .b { max-width: 70%; padding: 8px 12px 6px; border-radius: var(--br); font-size: 14px; line-height: 1.4; position: relative; box-shadow: var(--bsh); }
+  .b i { display: block; text-align: right; font-style: normal; font-size: 10.5px; opacity: .6; margin-top: 2px; }
+  .in { background: var(--bin); color: var(--bfg); align-self: flex-start; border-bottom-left-radius: 4px; }
+  .out { background: var(--bout); color: var(--bofg); align-self: flex-end; border-bottom-right-radius: 4px; }
+  .day { align-self: center; font-size: 11px; padding: 3px 10px; border-radius: 999px; background: var(--chip); color: var(--chipfg); margin-bottom: 4px; }
+  .comp { margin: 10px 14px 14px; display: flex; gap: 10px; align-items: center; }
+  .field { flex: 1; padding: 11px 16px; border-radius: 999px; background: var(--field); color: var(--mute); font-size: 14px; box-shadow: var(--bsh); }
+  .send { width: 40px; height: 40px; border-radius: 50%; background: var(--accent); display: grid; place-items: center; color: #fff; }
+  .rail { display: flex; gap: 6px; padding: 0 12px 8px; font-size: 12px; }
+  .rail span { padding: 4px 11px; border-radius: 999px; color: var(--mute); }
+  .rail .on { background: var(--accent); color: #fff; }
+
+  /* A: чистый светлый */
+  .A { --panel:#fff; --fg:#17202e; --mute:#7a8596; --line:#e8ecf2; --sunken:#f0f3f8; --accent:#2f7cf6; --active:#e6efff; --activefg:#17202e;
+       --wall:#f4f6fa; --head:#fff; --bin:#fff; --bfg:#17202e; --bout:#2f7cf6; --bofg:#fff; --br:18px; --bsh:0 1px 2px rgba(20,30,50,.08);
+       --chip:#e3e8f0; --chipfg:#5b6677; --field:#fff; --av:46px; --rowpad:10px 10px; --rowr:12px; }
+  /* B: тёмный */
+  .B { --panel:#14171f; --fg:#e9edf5; --mute:#8791a5; --line:#232836; --sunken:#1c2130; --accent:#7c6cff; --active:#262c40; --activefg:#fff;
+       --wall:#0e1117; --head:#14171f; --bin:#1e2331; --bfg:#e9edf5; --bout:#5a4de0; --bofg:#fff; --br:16px; --bsh:none;
+       --chip:#1e2331; --chipfg:#8791a5; --field:#1c2130; --av:44px; --rowpad:9px 10px; --rowr:10px; }
+  /* C: тёплый, с обоями */
+  .C { --panel:#fff; --fg:#1b2a22; --mute:#7a8a80; --line:#e4ebe6; --sunken:#eef3ef; --accent:#2aa876; --active:#2aa876; --activefg:#fff;
+       --wall: radial-gradient(60% 50% at 0% 0%, #e2ebb0 0, transparent 70%), radial-gradient(60% 60% at 100% 100%, #cfe7c9 0, transparent 70%), #a9cfae;
+       --head:#fff; --bin:#fff; --bfg:#1b2a22; --bout:#dcf7c5; --bofg:#1b2a22; --br:14px; --bsh:0 1px 1px rgba(0,0,0,.12);
+       --chip:rgba(30,60,40,.35); --chipfg:#fff; --field:#fff; --av:50px; --rowpad:9px 12px; --rowr:0; }
+  .C .chat { margin: 0; }
+</style>
+</head>
+<body>
+<h1>FLUX: три направления дизайна</h1>
+<p class="lead">Один и тот же экран в трёх стилях. Скажи букву A, B или C, можно с уточнением («как A, но шрифт крупнее»).</p>
+
+<div class="grid">
+
+  <section>
+    <p class="tag">A. Чистый светлый</p>
+    <p class="why">Белый, много воздуха, синий акцент, крупные аватарки, выбранный чат подсвечен мягко. Самое «спокойное» и читаемое.</p>
+    <div class="app A">
+      <div class="list">
+        <div class="search">Поиск</div>
+        <div class="rail"><span class="on">Все</span><span>Личные</span><span>Группы</span></div>
+        <div class="chat active"><div class="av" style="background:#6a5cf2">АН</div><div class="meta"><div class="name">Анна <small>11:49</small></div><div class="prev">Скинь потом скриншоты…</div></div></div>
+        <div class="chat"><div class="av" style="background:#22b573">КФ</div><div class="meta"><div class="name">Команда FLUX <small>11:20</small></div><div class="prev"><span>Дима: готово, смотри</span><span class="badge">3</span></div></div></div>
+        <div class="chat"><div class="av" style="background:#f2994a">НФ</div><div class="meta"><div class="name">Новости FLUX <small>вчера</small></div><div class="prev">Вышла версия 1.2</div></div></div>
+        <div class="chat"><div class="av" style="background:#e5568a">МА</div><div class="meta"><div class="name">Мама <small>пн</small></div><div class="prev">позвони вечером</div></div></div>
+      </div>
+      <div class="main">
+        <div class="head"><div class="av" style="background:#6a5cf2;width:38px;height:38px">АН</div><div><b>Анна</b><span>в сети</span></div></div>
+        <div class="msgs">
+          <div class="day">Сегодня</div>
+          <div class="b in">Привет! Как дела с проектом?<i>11:49</i></div>
+          <div class="b out">Всё отлично, доделал каталог ботов 🎉<i>11:49 ✓✓</i></div>
+          <div class="b in">Круто! А звонки уже работают?<i>11:49</i></div>
+          <div class="b out">Да, групповые работают.<i>11:50 ✓✓</i></div>
+        </div>
+        <div class="comp"><div class="field">Напишите сообщение…</div><div class="send">➤</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="tag">B. Тёмный, глубокий</p>
+    <p class="why">Тёмно-синий фон, фиолетовый акцент, плотнее. Для тех, кто сидит вечерами; выглядит «технологично».</p>
+    <div class="app B">
+      <div class="list">
+        <div class="search">Поиск</div>
+        <div class="rail"><span class="on">Все</span><span>Личные</span><span>Группы</span></div>
+        <div class="chat active"><div class="av" style="background:#6a5cf2">АН</div><div class="meta"><div class="name">Анна <small>11:49</small></div><div class="prev">Скинь потом скриншоты…</div></div></div>
+        <div class="chat"><div class="av" style="background:#22b573">КФ</div><div class="meta"><div class="name">Команда FLUX <small>11:20</small></div><div class="prev"><span>Дима: готово, смотри</span><span class="badge">3</span></div></div></div>
+        <div class="chat"><div class="av" style="background:#f2994a">НФ</div><div class="meta"><div class="name">Новости FLUX <small>вчера</small></div><div class="prev">Вышла версия 1.2</div></div></div>
+        <div class="chat"><div class="av" style="background:#e5568a">МА</div><div class="meta"><div class="name">Мама <small>пн</small></div><div class="prev">позвони вечером</div></div></div>
+      </div>
+      <div class="main">
+        <div class="head"><div class="av" style="background:#6a5cf2;width:38px;height:38px">АН</div><div><b>Анна</b><span>в сети</span></div></div>
+        <div class="msgs">
+          <div class="day">Сегодня</div>
+          <div class="b in">Привет! Как дела с проектом?<i>11:49</i></div>
+          <div class="b out">Всё отлично, доделал каталог ботов 🎉<i>11:49 ✓✓</i></div>
+          <div class="b in">Круто! А звонки уже работают?<i>11:49</i></div>
+          <div class="b out">Да, групповые работают.<i>11:50 ✓✓</i></div>
+        </div>
+        <div class="comp"><div class="field">Напишите сообщение…</div><div class="send">➤</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="tag">C. Тёплый, с обоями</p>
+    <p class="why">Зелёный акцент, мягкие обои, зелёные свои пузыри, строки списка на всю ширину. Ближе всего к привычному мессенджеру.</p>
+    <div class="app C">
+      <div class="list">
+        <div class="search">Поиск</div>
+        <div class="chat active"><div class="av" style="background:#6a5cf2">АН</div><div class="meta"><div class="name">Анна <small>11:49</small></div><div class="prev">Скинь потом скриншоты…</div></div></div>
+        <div class="chat"><div class="av" style="background:#22b573">КФ</div><div class="meta"><div class="name">Команда FLUX <small>11:20</small></div><div class="prev"><span>Дима: готово, смотри</span><span class="badge">3</span></div></div></div>
+        <div class="chat"><div class="av" style="background:#f2994a">НФ</div><div class="meta"><div class="name">Новости FLUX <small>вчера</small></div><div class="prev">Вышла версия 1.2</div></div></div>
+        <div class="chat"><div class="av" style="background:#e5568a">МА</div><div class="meta"><div class="name">Мама <small>пн</small></div><div class="prev">позвони вечером</div></div></div>
+      </div>
+      <div class="main">
+        <div class="head"><div class="av" style="background:#6a5cf2;width:38px;height:38px">АН</div><div><b>Анна</b><span>в сети</span></div></div>
+        <div class="msgs">
+          <div class="day">Сегодня</div>
+          <div class="b in">Привет! Как дела с проектом?<i>11:49</i></div>
+          <div class="b out">Всё отлично, доделал каталог ботов 🎉<i>11:49 ✓✓</i></div>
+          <div class="b in">Круто! А звонки уже работают?<i>11:49</i></div>
+          <div class="b out">Да, групповые работают.<i>11:50 ✓✓</i></div>
+        </div>
+        <div class="comp"><div class="field">Напишите сообщение…</div><div class="send">➤</div></div>
+      </div>
+    </div>
+  </section>
+
+</div>
+</body>
+</html>

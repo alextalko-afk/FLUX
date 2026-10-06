@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FLUX: профиль группы, два варианта</title>
+<style>
+  :root { font-family: Inter, 'Segoe UI', system-ui, sans-serif; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #07090d; color: #eceff6; padding: 32px 26px 70px; -webkit-font-smoothing: antialiased; }
+  h1 { font-size: 24px; letter-spacing: -.02em; } .lead { color: #8993a8; margin: 6px 0 24px; font-size: 14px; max-width: 760px; line-height: 1.55; }
+  h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .14em; color: #8f84ff; margin: 6px 0 12px; font-weight: 700; }
+  .cap { color: #8993a8; font-size: 12.5px; margin-top: 10px; line-height: 1.5; max-width: 640px; }
+  .grid { display: grid; gap: 34px; }
+  svg.i { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+  svg.s { width: 16px; height: 16px; }
+  .frame { --bg:#0b0d13; --panel:#13161e; --elev:#1b202d; --hover:#1f2535; --active:#252b3f; --line:#222735; --fg:#eceff6; --mute:#8993a8;
+           --accent:#7c6cff; --accent2:#a99dff; --ok:#35d39a; --err:#ff6b7a; --wall:#0d1016;
+           background: var(--panel); color: var(--fg); border-radius: 16px; border: 1px solid var(--line); overflow: hidden; box-shadow: 0 24px 60px rgba(0,0,0,.55); }
+  .av { border-radius: 50%; display: grid; place-items: center; color: #fff; font-weight: 700; flex: none; position: relative; letter-spacing: .02em; }
+  .av.on::after { content: ''; position: absolute; right: -1px; bottom: -1px; width: 11px; height: 11px; background: var(--ok); border: 2px solid var(--panel); border-radius: 50%; }
+  .tag { display: inline-flex; align-items: center; gap: 6px; background: rgba(53,211,154,.13); color: var(--ok); padding: 4px 10px; border-radius: 99px; font-size: 12px; font-weight: 600; }
+  .mute { color: var(--mute); }
+
+  /* ---------- вариант A: панель справа ---------- */
+  .A { display: grid; grid-template-columns: 1fr 340px; height: 560px; max-width: 900px; }
+  .A .chatbg { background: var(--wall); display: grid; place-items: center; color: var(--mute); font-size: 13px; background-image: radial-gradient(60% 40% at 8% 0%, rgba(124,108,255,.10), transparent 70%); }
+  .A .panel { border-left: 1px solid var(--line); display: flex; flex-direction: column; background: var(--panel); overflow: hidden; }
+  .A .ph { padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; font-weight: 700; font-size: 15px; }
+  .A .ph svg { color: var(--mute); }
+  .A .id { padding: 6px 20px 16px; display: flex; gap: 14px; align-items: center; }
+  .A .id b { font-size: 18px; display: block; letter-spacing: -.01em; } .A .id small { color: var(--mute); font-size: 13px; }
+  .A .acts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 0 16px 14px; }
+  .A .acts div { background: var(--elev); border-radius: 12px; padding: 10px 0 8px; display: grid; justify-items: center; gap: 5px; font-size: 11.5px; color: var(--fg); font-weight: 500; }
+  .A .acts svg { color: var(--accent2); }
+  .A .info { border-top: 8px solid var(--bg); }
+  .A .row { display: flex; gap: 14px; padding: 11px 20px; align-items: flex-start; font-size: 14px; }
+  .A .row svg { color: var(--mute); margin-top: 1px; } .A .row small { display: block; color: var(--mute); font-size: 12.5px; margin-top: 1px; }
+  .A .tabs { display: flex; border-top: 8px solid var(--bg); border-bottom: 1px solid var(--line); font-size: 13px; font-weight: 600; color: var(--mute); }
+  .A .tabs span { flex: 1; text-align: center; padding: 11px 0; } .A .tabs .on { color: var(--accent2); box-shadow: inset 0 -2px var(--accent); }
+  .A .mem { padding: 4px 8px; overflow: hidden; }
+  .A .mem div { display: flex; align-items: center; gap: 12px; padding: 7px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; }
+  .A .mem small { margin-left: auto; color: var(--mute); font-size: 12px; font-weight: 400; }
+  .A .mem .add { color: var(--accent2); }
+  .A .mem .add i { width: 38px; height: 38px; border-radius: 50%; background: rgba(124,108,255,.16); display: grid; place-items: center; }
+
+  /* ---------- вариант B: страница ---------- */
+  .B { height: 560px; display: grid; grid-template-rows: 150px 1fr; background: var(--bg); max-width: 900px; }
+  .B .banner { background: linear-gradient(135deg, #5b4de2, #1fb37a 140%); position: relative; }
+  .B .banner::after { content: ''; position: absolute; inset: 0; background: radial-gradient(60% 100% at 80% 0%, rgba(255,255,255,.18), transparent 70%); }
+  .B .body { display: grid; grid-template-columns: 300px 1fr; gap: 18px; padding: 0 24px 20px; position: relative; }
+  .B .left { margin-top: -46px; position: relative; z-index: 1; }
+  .B .left .av { width: 92px; height: 92px; font-size: 30px; border: 4px solid var(--bg); }
+  .B .left h3 { font-size: 21px; margin: 10px 0 2px; letter-spacing: -.01em; }
+  .B .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; margin-top: 14px; overflow: hidden; }
+  .B .card .r { display: flex; gap: 12px; padding: 11px 14px; font-size: 13.5px; align-items: center; } .B .card .r + .r { border-top: 1px solid var(--line); }
+  .B .card .r svg { color: var(--mute); } .B .card .r.red { color: var(--err); } .B .card .r.red svg { color: var(--err); }
+  .B .card .r small { margin-left: auto; color: var(--mute); }
+  .B .right { padding-top: 18px; } .B .tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+  .B .tabs span { padding: 7px 14px; border-radius: 9px; font-size: 13px; font-weight: 600; color: var(--mute); } .B .tabs .on { background: var(--active); color: var(--fg); }
+  .B .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .B .m { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; display: flex; gap: 10px; align-items: center; font-size: 13.5px; font-weight: 500; }
+  .B .m small { display: block; color: var(--mute); font-weight: 400; font-size: 12px; }
+  .B .btns { display: flex; gap: 8px; margin-top: 12px; }
+  .B .btns div { flex: 1; text-align: center; padding: 9px; border-radius: 10px; background: var(--accent); color: #fff; font-size: 13px; font-weight: 600; }
+  .B .btns div.sec { background: var(--elev); color: var(--fg); }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="x" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></symbol>
+  <symbol id="bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/></symbol>
+  <symbol id="search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></symbol>
+  <symbol id="phone" viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></symbol>
+  <symbol id="more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></symbol>
+  <symbol id="info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></symbol>
+  <symbol id="link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></symbol>
+  <symbol id="lock" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+  <symbol id="plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="logout" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></symbol>
+  <symbol id="img" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></symbol>
+  <symbol id="user" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+</svg>
+
+<h1>Профиль группы · два варианта</h1>
+<p class="lead">Оба без смайликов. Вариант A: узкая панель справа поверх чата, как в мессенджерах на десктопе, чат остаётся виден. Вариант B: отдельная страница с цветной обложкой и двумя колонками.</p>
+
+<div class="grid">
+<div>
+  <h2>A. Панель справа</h2>
+  <div class="frame A">
+    <div class="chatbg">Переписка остаётся слева</div>
+    <div class="panel">
+      <div class="ph">Информация о группе <svg class="i"><use href="#x"/></svg></div>
+      <div class="id"><div class="av on" style="width:64px;height:64px;font-size:22px;background:#1fb37a">КФ</div><div><b>Команда FLUX</b><small>24 участника, 5 в сети</small></div></div>
+      <div class="acts">
+        <div><svg class="i"><use href="#bell"/></svg>Звук</div><div><svg class="i"><use href="#search"/></svg>Поиск</div>
+        <div><svg class="i"><use href="#phone"/></svg>Звонок</div><div><svg class="i"><use href="#more"/></svg>Ещё</div>
+      </div>
+      <div class="info">
+        <div class="row"><svg class="i"><use href="#info"/></svg><div>Рабочий чат команды разработки<small>Описание</small></div></div>
+        <div class="row"><svg class="i"><use href="#link"/></svg><div>flux.app/j/team-4f2a<small>Ссылка-приглашение</small></div></div>
+        <div class="row"><svg class="i" style="color:var(--ok)"><use href="#lock"/></svg><div>Сквозное шифрование<small>Сообщения читают только участники</small></div></div>
+      </div>
+      <div class="tabs"><span class="on">Участники</span><span>Медиа</span><span>Файлы</span><span>Ссылки</span></div>
+      <div class="mem">
+        <div class="add"><i><svg class="i s"><use href="#plus"/></svg></i>Добавить участника</div>
+        <div><div class="av on" style="width:38px;height:38px;font-size:12px;background:#6a5cf2">ДМ</div>Дима<small>владелец</small></div>
+        <div><div class="av on" style="width:38px;height:38px;font-size:12px;background:#e5568a">АН</div>Анна<small>админ</small></div>
+        <div><div class="av" style="width:38px;height:38px;font-size:12px;background:#f0954a">ИВ</div>Иван<small>был(а) вчера</small></div>
+      </div>
+    </div>
+  </div>
+  <p class="cap">Всё по порядку сверху вниз: кто это, быстрые действия, сведения о группе, участники. Не уходишь из чата: закрыл крестиком и вернулся к переписке.</p>
+</div>
+
+<div>
+  <h2>B. Страница с обложкой</h2>
+  <div class="frame B">
+    <div class="banner"></div>
+    <div class="body">
+      <div class="left">
+        <div class="av on" style="background:#1fb37a">КФ</div>
+        <h3>Команда FLUX</h3>
+        <div class="mute" style="font-size:13px">24 участника, 5 в сети</div>
+        <div style="margin-top:10px"><span class="tag"><svg class="i s"><use href="#lock"/></svg>сквозное шифрование</span></div>
+        <div class="card">
+          <div class="r"><svg class="i"><use href="#info"/></svg>Рабочий чат команды разработки</div>
+          <div class="r"><svg class="i"><use href="#link"/></svg>flux.app/j/team-4f2a</div>
+          <div class="r"><svg class="i"><use href="#bell"/></svg>Уведомления<small>Включены</small></div>
+          <div class="r red"><svg class="i"><use href="#logout"/></svg>Покинуть группу</div>
+        </div>
+      </div>
+      <div class="right">
+        <div class="tabs"><span class="on">Участники 24</span><span>Медиа 63</span><span>Файлы 12</span><span>Ссылки 8</span></div>
+        <div class="grid2">
+          <div class="m"><div class="av on" style="width:40px;height:40px;font-size:13px;background:#6a5cf2">ДМ</div><div>Дима<small>владелец</small></div></div>
+          <div class="m"><div class="av on" style="width:40px;height:40px;font-size:13px;background:#e5568a">АН</div><div>Анна<small>админ</small></div></div>
+          <div class="m"><div class="av" style="width:40px;height:40px;font-size:13px;background:#f0954a">ИВ</div><div>Иван<small>был(а) вчера</small></div></div>
+          <div class="m"><div class="av on" style="width:40px;height:40px;font-size:13px;background:#22a7f0">СК</div><div>Саша<small>в сети</small></div></div>
+          <div class="m"><div class="av" style="width:40px;height:40px;font-size:13px;background:#a35cf0">ОЛ</div><div>Олег<small>был(а) пн</small></div></div>
+          <div class="m"><div class="av" style="width:40px;height:40px;font-size:13px;background:#2fb5c9">ТМ</div><div>Тимур<small>был(а) вчера</small></div></div>
+        </div>
+        <div class="btns"><div>Добавить участника</div><div class="sec">Пригласить по ссылке</div></div>
+      </div>
+    </div>
+  </div>
+  <p class="cap">Больше места и цвета: обложка, карточка с действиями слева, участники сеткой справа. Подходит, если профиль открывается отдельным экраном.</p>
+</div>
+</div>
+</body>
+</html>

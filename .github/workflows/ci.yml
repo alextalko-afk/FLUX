@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @FLUX/server exec prisma generate
+      - run: pnpm --filter @FLUX/shared run build
+      - name: Typecheck
+        run: |
+          pnpm --filter @FLUX/server exec tsc --noEmit -p .
+          pnpm --filter @FLUX/web exec tsc --noEmit -p .
+          pnpm --filter @FLUX/mobile exec tsc --noEmit -p .
+      - name: Lint
+        run: |
+          pnpm --filter @FLUX/server exec eslint src
+          pnpm --filter @FLUX/web exec eslint src
+      - name: Unit tests
+        run: pnpm --filter @FLUX/tests exec vitest run
+      - name: Build
+        run: pnpm --filter @FLUX/server run build && pnpm --filter @FLUX/web run build
+
+  images:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -f docker/server/Dockerfile -t flux-server .
+      - run: docker build -f docker/web/Dockerfile -t flux-web .
+      - name: Validate the production compose file
+        run: |
+          sed 's/=$/=ci/' .env.prod.example > .env.prod
+          docker compose -f docker-compose.prod.yml --env-file .env.prod config -q
+
+  integration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: cp .env.example .env && cp .env.example apps/server/.env
+      - run: docker compose up -d postgres redis seaweedfs
+      - run: pnpm --filter @FLUX/shared run build
+      - run: pnpm --filter @FLUX/server exec prisma generate
+      - run: pnpm --filter @FLUX/server exec prisma migrate deploy
+      - run: pnpm --filter @FLUX/server run build
+      - name: Start API
+        run: |
+          (cd apps/server && node dist/main.js > /tmp/api.log 2>&1 &)
+          for i in $(seq 1 60); do curl -sf localhost:3000/api/v1/health && break; sleep 2; done
+      - run: pnpm --filter @FLUX/tests exec vitest run -c vitest.integration.config.ts
+      - if: failure()
+        run: tail -n 100 /tmp/api.log

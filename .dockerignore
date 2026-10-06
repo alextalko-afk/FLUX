@@ -1,0 +1,15 @@
+# Keep the build context small and never bake host files or secrets into an image.
+**/node_modules
+**/dist
+**/.vite
+**/*.tsbuildinfo
+.git
+**/.env
+**/.env.*
+!.env.example
+backups
+tests
+apps/desktop
+apps/mobile
+docs
+*.md

@@ -1,0 +1,39 @@
+# Optional override: run MinIO instead of SeaweedFS as the local S3 server.
+#
+# Why an override and not the default? MinIO removed its Docker Hub images in
+# 2025 — `minio/minio` and `minio/mc` now return 404. This file therefore pulls
+# MinIO from Quay.io, which is the vendor's official registry.
+#
+# Usage:
+#   docker compose -f docker-compose.yml -f docker/docker-compose.minio.yml up -d
+#
+# Both MinIO and SeaweedFS listen on port 9000, so `.env` (S3_ENDPOINT,
+# S3_ACCESS_KEY, S3_SECRET_KEY) does not change.
+#
+# The application creates the required buckets automatically on startup, so no
+# extra initialization container is needed here.
+
+services:
+  # The `minio` profile disables the default SeaweedFS service when this
+  # override file is used.
+  seaweedfs:
+    profiles: ["minio"]
+
+  minio:
+    image: quay.io/minio/minio:latest
+    container_name: tglike-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${S3_ACCESS_KEY:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${S3_SECRET_KEY:-minioadmin}
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    networks:
+      - tglike-net
+
+volumes:
+  minio_data:

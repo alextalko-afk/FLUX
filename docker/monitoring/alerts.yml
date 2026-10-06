@@ -1,0 +1,23 @@
+groups:
+  - name: flux
+    rules:
+      - alert: ApiDown
+        expr: up{job="flux"} == 0
+        for: 2m
+        labels: { severity: critical }
+        annotations: { summary: "FLUX API is not answering scrapes" }
+      - alert: High5xxRate
+        expr: sum(rate(flux_http_requests_total{status=~"5.."}[5m])) / sum(rate(flux_http_requests_total[5m])) > 0.05
+        for: 5m
+        labels: { severity: warning }
+        annotations: { summary: "More than 5% of API requests fail" }
+      - alert: SlowApi
+        expr: histogram_quantile(0.95, sum by (le) (rate(flux_http_request_duration_seconds_bucket[5m]))) > 1
+        for: 10m
+        labels: { severity: warning }
+        annotations: { summary: "API p95 latency above 1 s" }
+      - alert: FailedQueueJobs
+        expr: flux_queue_jobs{state="failed"} > 20
+        for: 10m
+        labels: { severity: warning }
+        annotations: { summary: "Queue {{ $labels.queue }} has many failed jobs (Admin → System → Queues)" }

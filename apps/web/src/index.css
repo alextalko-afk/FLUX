@@ -1,0 +1,709 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Overridden at runtime by `applyFont` from the appearance settings. */
+  --font-scale: 1;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
+
+  /* Generous radii are the single biggest difference between a designed
+     interface and a stack of rectangles. */
+  --radius-bubble: 20px;
+  --radius-panel: 20px;
+  --radius-card: 24px;
+  --radius-shell: 28px;
+  --radius-pill: 999px;
+
+  --shadow-panel: 0 1px 2px rgba(16, 24, 40, 0.05);
+  --shadow-dropdown: 0 12px 32px -8px rgba(16, 24, 40, 0.18), 0 4px 8px -4px rgba(16, 24, 40, 0.08);
+  --shadow-card: 0 1px 3px rgba(16, 24, 40, 0.06), 0 1px 2px rgba(16, 24, 40, 0.04);
+  --shadow-accent: 0 4px 14px -3px rgba(46, 124, 246, 0.45);
+  /* Two-part bubble shadow: a tight contact shadow plus a soft lift, which is
+     what separates a bubble from the surface without a hard border. */
+  --shadow-bubble: 0 1px 1px rgba(16, 24, 40, 0.06), 0 2px 6px -1px rgba(16, 24, 40, 0.1);
+  --shadow-float: 0 8px 28px -6px rgba(16, 24, 40, 0.16);
+  --shadow-ring: 0 0 0 1px rgba(16, 24, 40, 0.05);
+
+  --color-bg-app: 247 248 251;
+  --color-bg-panel: 255 255 255;
+  --color-bg-elevated: 255 255 255;
+  --color-bg-sunken: 240 242 247;
+  --color-bg-chat: 233 240 248;
+  --color-bg-hover: 240 243 248;
+  --color-bg-active: 228 234 242;
+  --color-bg-overlay: 15 23 42 / 0.45;
+  --color-bubble-out: 214 234 251;
+  --color-bubble-in: 255 255 255;
+
+  --color-fg-primary: 20 25 33;
+  --color-fg-secondary: 84 96 112;
+  /* Previously 140 152 168 → only 2.8:1 on a white panel, which is what made
+     timestamps and captions read as "dull". Now ~4.6:1 (WCAG AA). */
+  --color-fg-tertiary: 106 118 134;
+  --color-fg-inverse: 255 255 255;
+  --color-fg-link: 30 100 214;
+  --color-fg-accent: 46 124 246;
+  --color-fg-error: 220 53 69;
+  --color-fg-success: 40 167 69;
+  --color-fg-warning: 202 138 12;
+
+  /* Text/icon colour meant to sit ON the accent fill (badges, active tab).
+     Every bundled accent is light enough that near-black text wins: white on
+     the default blue was only 2.6:1, while this ink reaches 8:1. */
+  --color-fg-on-accent: 255 255 255;
+
+  --color-border: 224 228 233;
+  --color-border-subtle: 238 241 245;
+
+  color-scheme: light;
+}
+
+html[data-theme='dark'] {
+  /* Layered dark surfaces: the app background sits below the panel, which
+     itself sits below floating cards. Flat greys read as unfinished, so the
+     steps are deliberately subtle but visible. */
+  --color-bg-app: 11 13 19;
+  --color-bg-panel: 20 23 31;
+  --color-bg-elevated: 28 33 48;
+  --color-bg-sunken: 28 33 48;
+  --color-bg-chat: 14 17 23;
+  --color-bg-hover: 32 38 54;
+  --color-bg-active: 38 44 64;
+  --color-bg-overlay: 3 5 9 / 0.75;
+  --color-bubble-out: 90 77 224;
+  --color-bubble-in: 30 35 49;
+
+  --color-fg-primary: 233 237 245;
+  --color-fg-secondary: 160 171 190;
+  /* Was 104 116 132 → 3.9:1 on the panel. Lifted to clear WCAG AA. */
+  --color-fg-tertiary: 135 145 165;
+  --color-fg-inverse: 17 20 26;
+  --color-fg-link: 150 138 255;
+  --color-fg-accent: 124 108 255;
+  --color-fg-error: 248 105 107;
+  --color-fg-success: 74 205 128;
+  --color-fg-warning: 240 180 90;
+  --color-fg-on-accent: 255 255 255;
+
+  --color-border: 35 40 54;
+  --color-border-subtle: 28 33 45;
+
+  --shadow-panel: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-dropdown: 0 20px 48px -12px rgba(0, 0, 0, 0.8), 0 6px 14px -6px rgba(0, 0, 0, 0.6);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.5);
+  --shadow-accent: 0 6px 18px -4px rgba(124, 108, 255, 0.5);
+  --shadow-bubble: 0 1px 1px rgba(0, 0, 0, 0.35), 0 2px 8px -2px rgba(0, 0, 0, 0.5);
+  --shadow-float: 0 12px 32px -8px rgba(0, 0, 0, 0.7);
+  --shadow-ring: 0 0 0 1px rgba(255, 255, 255, 0.05);
+
+  color-scheme: dark;
+}
+
+html[data-theme='system'] {
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  html[data-theme='system'] {
+    --color-bg-app: 11 13 19;
+    --color-bg-panel: 20 23 31;
+    --color-bg-elevated: 28 33 48;
+    --color-bg-sunken: 28 33 48;
+    --color-bg-chat: 14 17 23;
+    --color-bg-hover: 32 38 54;
+    --color-bg-active: 38 44 64;
+    --color-bg-overlay: 3 5 9 / 0.75;
+    --color-bubble-out: 90 77 224;
+    --color-bubble-in: 30 35 49;
+
+    --color-fg-primary: 233 237 245;
+    --color-fg-secondary: 160 171 190;
+    --color-fg-tertiary: 135 145 165;
+    --color-fg-inverse: 17 20 26;
+    --color-fg-link: 150 138 255;
+    --color-fg-accent: 124 108 255;
+    --color-fg-error: 248 105 107;
+    --color-fg-success: 74 205 128;
+    --color-fg-warning: 240 180 90;
+    --color-fg-on-accent: 255 255 255;
+
+    --color-border: 35 40 54;
+    --color-border-subtle: 28 33 45;
+
+    --shadow-panel: 0 1px 2px rgba(0, 0, 0, 0.5);
+    --shadow-dropdown: 0 20px 48px -12px rgba(0, 0, 0, 0.8), 0 6px 14px -6px rgba(0, 0, 0, 0.6);
+    --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.5);
+    --shadow-accent: 0 6px 18px -4px rgba(124, 108, 255, 0.5);
+    --shadow-bubble: 0 1px 1px rgba(0, 0, 0, 0.35), 0 2px 8px -2px rgba(0, 0, 0, 0.5);
+    --shadow-float: 0 12px 32px -8px rgba(0, 0, 0, 0.7);
+    --shadow-ring: 0 0 0 1px rgba(255, 255, 255, 0.05);
+  }
+}
+
+/* Accent themes.
+   The selector must include the `html` element so its specificity ties with
+   `html[data-theme=...]` (0,1,1); a bare `[data-accent]` (0,1,0) would lose to
+   the theme blocks above and accents would silently do nothing in dark mode.
+   Source order then decides, and these rules come after the theme blocks. */
+html[data-accent='blue'] {
+  --color-fg-accent: 46 124 246;
+  --color-fg-link: 30 100 214;
+  --accent-glow: 46 124 246;
+  --shadow-accent: 0 6px 18px -4px rgba(46, 124, 246, 0.5);
+}
+html[data-accent='indigo'] {
+  --color-fg-accent: 124 108 255;
+  --color-fg-link: 150 138 255;
+  --accent-glow: 124 108 255;
+  --shadow-accent: 0 6px 18px -4px rgba(124, 108, 255, 0.5);
+}
+html[data-accent='violet'] {
+  --color-fg-accent: 167 130 255;
+  --color-fg-link: 143 106 245;
+  --accent-glow: 167 130 255;
+  --shadow-accent: 0 6px 18px -4px rgba(167, 130, 255, 0.5);
+}
+html[data-accent='emerald'] {
+  --color-fg-accent: 52 199 143;
+  --color-fg-link: 38 168 120;
+  --accent-glow: 52 199 143;
+  --shadow-accent: 0 6px 18px -4px rgba(52, 199, 143, 0.5);
+}
+html[data-accent='rose'] {
+  --color-fg-accent: 244 120 150;
+  --color-fg-link: 226 90 122;
+  --accent-glow: 244 120 150;
+  --shadow-accent: 0 6px 18px -4px rgba(244, 120, 150, 0.5);
+}
+html[data-accent='amber'] {
+  --color-fg-accent: 245 178 76;
+  --color-fg-link: 214 145 44;
+  --accent-glow: 245 178 76;
+  --shadow-accent: 0 6px 18px -4px rgba(245, 178, 76, 0.5);
+}
+
+/* Dark mode needs a brighter accent for contrast on dark surfaces. These rules
+   come last so they override the light accent values above. */
+html[data-theme='dark'][data-accent='blue'],
+html[data-theme='system'][data-accent='blue'] {
+  --color-fg-accent: 105 165 255;
+  --color-fg-link: 132 178 255;
+  --shadow-accent: 0 6px 20px -4px rgba(105, 165, 255, 0.55);
+}
+html[data-theme='dark'][data-accent='indigo'],
+html[data-theme='system'][data-accent='indigo'] {
+  --color-fg-accent: 138 152 255;
+  --color-fg-link: 150 164 255;
+  --shadow-accent: 0 6px 20px -4px rgba(138, 152, 255, 0.55);
+}
+html[data-theme='dark'][data-accent='violet'],
+html[data-theme='system'][data-accent='violet'] {
+  --color-fg-accent: 186 156 255;
+  --color-fg-link: 196 172 255;
+  --shadow-accent: 0 6px 20px -4px rgba(186, 156, 255, 0.55);
+}
+html[data-theme='dark'][data-accent='emerald'],
+html[data-theme='system'][data-accent='emerald'] {
+  --color-fg-accent: 80 214 162;
+  --color-fg-link: 96 222 176;
+  --shadow-accent: 0 6px 20px -4px rgba(80, 214, 162, 0.55);
+}
+html[data-theme='dark'][data-accent='rose'],
+html[data-theme='system'][data-accent='rose'] {
+  --color-fg-accent: 255 145 172;
+  --color-fg-link: 255 165 188;
+  --shadow-accent: 0 6px 20px -4px rgba(255, 145, 172, 0.55);
+}
+html[data-theme='dark'][data-accent='amber'],
+html[data-theme='system'][data-accent='amber'] {
+  --color-fg-accent: 255 196 102;
+  --color-fg-link: 255 208 130;
+  --shadow-accent: 0 6px 20px -4px rgba(255, 196, 102, 0.55);
+}
+
+/* System theme only gets the bright variants while the OS is in dark mode. */
+@media (prefers-color-scheme: dark) {
+  html[data-theme='system'][data-accent='blue'] {
+    --color-fg-accent: 105 165 255;
+    --color-fg-link: 132 178 255;
+    --shadow-accent: 0 6px 20px -4px rgba(105, 165, 255, 0.55);
+  }
+  html[data-theme='system'][data-accent='indigo'] {
+    --color-fg-accent: 138 152 255;
+    --color-fg-link: 150 164 255;
+    --shadow-accent: 0 6px 20px -4px rgba(138, 152, 255, 0.55);
+  }
+  html[data-theme='system'][data-accent='violet'] {
+    --color-fg-accent: 186 156 255;
+    --color-fg-link: 196 172 255;
+    --shadow-accent: 0 6px 20px -4px rgba(186, 156, 255, 0.55);
+  }
+  html[data-theme='system'][data-accent='emerald'] {
+    --color-fg-accent: 80 214 162;
+    --color-fg-link: 96 222 176;
+    --shadow-accent: 0 6px 20px -4px rgba(80, 214, 162, 0.55);
+  }
+  html[data-theme='system'][data-accent='rose'] {
+    --color-fg-accent: 255 145 172;
+    --color-fg-link: 255 165 188;
+    --shadow-accent: 0 6px 20px -4px rgba(255, 145, 172, 0.55);
+  }
+  html[data-theme='system'][data-accent='amber'] {
+    --color-fg-accent: 255 196 102;
+    --color-fg-link: 255 208 130;
+    --shadow-accent: 0 6px 20px -4px rgba(255, 196, 102, 0.55);
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  /* In `rem` so the appearance setting's scale reaches the base size too;
+     a fixed px value here would ignore the root font-size entirely. */
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: rgb(var(--color-fg-primary));
+  background-color: rgb(var(--color-bg-app));
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overscroll-behavior: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+input,
+textarea {
+  font-family: inherit;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--color-border));
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--color-fg-tertiary));
+}
+
+:focus-visible {
+  outline: 2px solid rgb(var(--color-fg-accent));
+  outline-offset: 2px;
+}
+
+::selection {
+  background: rgb(var(--color-fg-accent) / 0.25);
+}
+
+/* The inset "device" that holds the whole app on desktop. */
+.app-shell {
+  border-radius: var(--radius-shell);
+  overflow: hidden;
+  border: 1px solid rgb(var(--color-border));
+  box-shadow: var(--shadow-float);
+  background: rgb(var(--color-bg-panel));
+}
+
+.app-shell-flush {
+  border-radius: 0;
+  border: 0;
+  box-shadow: none;
+}
+
+/* Chat wallpapers. `data-wallpaper` is set on <html> from the settings store.
+   The base is a set of large, very soft accent-tinted glows: a flat fill
+   looks empty, while a visible pattern competes with the message text. */
+.chat-wallpaper {
+  background-color: rgb(var(--color-bg-chat));
+  background-image:
+    radial-gradient(60rem 40rem at 12% -10%, rgb(var(--color-fg-accent) / 0.1), transparent 60%),
+    radial-gradient(48rem 34rem at 100% 0%, rgb(var(--color-fg-accent) / 0.07), transparent 60%),
+    radial-gradient(40rem 30rem at 50% 110%, rgb(var(--color-fg-accent) / 0.05), transparent 60%);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+
+[data-wallpaper='dots'] .chat-wallpaper {
+  background-image:
+    radial-gradient(rgb(var(--color-fg-tertiary) / 0.14) 1px, transparent 1px),
+    radial-gradient(rgb(var(--color-fg-accent) / 0.08) 1px, transparent 1px),
+    radial-gradient(60rem 40rem at 12% -10%, rgb(var(--color-fg-accent) / 0.1), transparent 60%);
+  background-size: 28px 28px, 28px 28px, 100% 100%;
+  background-position: 0 0, 14px 14px, 0 0;
+  background-repeat: repeat, repeat, no-repeat;
+}
+
+
+[data-wallpaper='none'] .chat-wallpaper {
+  background-image: none;
+}
+
+[data-wallpaper='grid'] .chat-wallpaper {
+  background-image:
+    linear-gradient(rgb(var(--color-fg-tertiary) / 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(var(--color-fg-tertiary) / 0.08) 1px, transparent 1px),
+    radial-gradient(60rem 40rem at 12% -10%, rgb(var(--color-fg-accent) / 0.07), transparent 60%);
+  background-size: 32px 32px, 32px 32px, 100% 100%;
+  background-repeat: repeat, repeat, no-repeat;
+}
+
+/* Message bubbles.
+   Own messages get an accent-tinted gradient so the two sides are instantly
+   distinguishable, and the bubble that closes a run grows a small tail. */
+.bubble {
+  position: relative;
+  border-radius: var(--radius-bubble);
+  box-shadow: var(--shadow-bubble);
+  border: 1px solid transparent;
+}
+
+.bubble-in {
+  border-radius: 6px var(--radius-bubble) var(--radius-bubble) var(--radius-bubble);
+  background: rgb(var(--color-bubble-in));
+  border-color: rgb(var(--color-border));
+}
+
+.bubble-out {
+  border-radius: var(--radius-bubble) 6px var(--radius-bubble) var(--radius-bubble);
+  background: linear-gradient(
+    160deg,
+    rgb(var(--color-bubble-out) / 1) 0%,
+    rgb(var(--color-bubble-out) / 0.86) 100%
+  );
+  border-color: rgb(var(--color-fg-accent) / 0.28);
+}
+
+/* Tail: a small rotated square that merges with the bubble body. */
+.bubble-tail::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  width: 11px;
+  height: 11px;
+}
+
+.bubble-out.bubble-tail::before {
+  right: -5px;
+  background: rgb(var(--color-bubble-out));
+  border-right: 1px solid rgb(var(--color-fg-accent) / 0.28);
+  border-bottom: 1px solid rgb(var(--color-fg-accent) / 0.28);
+  border-bottom-right-radius: 4px;
+  transform: rotate(-45deg);
+}
+
+.bubble-in.bubble-tail::before {
+  left: -5px;
+  background: rgb(var(--color-bubble-in));
+  border-left: 1px solid rgb(var(--color-border));
+  border-bottom: 1px solid rgb(var(--color-border));
+  border-bottom-left-radius: 4px;
+  transform: rotate(45deg);
+}
+
+/* Consecutive messages from the same side tuck together: no tail, tighter
+   corners. Only the last bubble of a run keeps the full asymmetric shape. */
+.bubble-group-cont {
+  border-radius: 10px;
+}
+
+.bubble-group-cont.bubble-in {
+  border-radius: 10px 10px 10px 4px;
+}
+
+.bubble-group-cont.bubble-out {
+  border-radius: 10px 4px 10px 10px;
+}
+
+/* Frosted panel used for headers, the sidebar and floating cards. */
+.glass {
+  background: rgb(var(--color-bg-panel) / 0.78);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+}
+
+/* Soft blurred glow used behind auth/empty states; scales with the accent. */
+.accent-glow {
+  background: radial-gradient(
+    circle at center,
+    rgb(var(--color-fg-accent) / 0.22) 0%,
+    transparent 70%
+  );
+}
+
+/* Skeleton loading placeholder with a sweeping highlight. */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgb(var(--color-bg-hover)) 25%,
+    rgb(var(--color-bg-active)) 37%,
+    rgb(var(--color-bg-hover)) 63%
+  );
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.6s linear infinite;
+}
+
+@keyframes skeletonShimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Typing indicator: three dots with staggered bounce. */
+.typing-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: rgb(var(--color-fg-tertiary));
+  animation: typingBounce 1.4s ease-in-out infinite;
+}
+.typing-dot:nth-child(2) {
+  animation-delay: 0.16s;
+}
+.typing-dot:nth-child(3) {
+  animation-delay: 0.32s;
+}
+
+@keyframes typingBounce {
+  0%,
+  80%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  40% {
+    transform: translateY(-5px);
+    opacity: 1;
+  }
+}
+
+/* One-shot entrance for elements that should not re-animate on every
+   re-render of a long list: only newly mounted nodes play it. */
+.enter-stagger > * {
+  animation: enterUp 0.34s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.enter-stagger > *:nth-child(1) { animation-delay: 0.015s; }
+.enter-stagger > *:nth-child(2) { animation-delay: 0.045s; }
+.enter-stagger > *:nth-child(3) { animation-delay: 0.075s; }
+.enter-stagger > *:nth-child(4) { animation-delay: 0.105s; }
+.enter-stagger > *:nth-child(5) { animation-delay: 0.135s; }
+.enter-stagger > *:nth-child(6) { animation-delay: 0.165s; }
+.enter-stagger > *:nth-child(7) { animation-delay: 0.195s; }
+.enter-stagger > *:nth-child(8) { animation-delay: 0.225s; }
+.enter-stagger > *:nth-child(n + 9) { animation-delay: 0.255s; }
+
+@keyframes enterUp {
+  0% {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Respect users who prefer reduced motion: collapse everything to a fade. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Sidebar navigation plaques.
+   The same card treatment as `.chat-row`, including the accent rail, so the
+   menu and the conversation list read as one system. */
+.nav-plaque {
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-plaque::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 0;
+  opacity: 0;
+  border-radius: 0 999px 999px 0;
+  background: rgb(var(--color-fg-accent));
+  transition:
+    height 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.3s ease;
+}
+
+.nav-plaque-active::before {
+  /* Flat, Telegram-like navigation: the tinted background is the only active marker. */
+  display: none;
+}
+
+/* Compact mode: tighter rows so more of the list fits on screen. */
+.is-compact .chat-row {
+  padding-top: 0.45rem;
+  padding-bottom: 0.45rem;
+}
+
+/* Slim, theme-aware scrollbars: the default OS scrollbar is bright grey and
+   looks broken against the dark surfaces. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(var(--color-fg-tertiary) / 0.45) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: rgb(var(--color-fg-tertiary) / 0.4);
+  border-radius: 9999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: rgb(var(--color-fg-tertiary) / 0.65);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Brief highlight when a pinned message is jumped to. */
+@keyframes message-flash {
+  0%,
+  100% {
+    background-color: transparent;
+  }
+  20%,
+  55% {
+    background-color: rgb(var(--color-fg-accent) / 0.14);
+  }
+}
+
+.message-flash {
+  animation: message-flash 2.4s ease-out;
+  border-radius: 14px;
+}
+
+/* The bubble itself lights up: an accent ring and halo that fade out. */
+@keyframes bubble-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(var(--color-fg-accent) / 0);
+    filter: none;
+  }
+  12%,
+  55% {
+    box-shadow: 0 0 0 3px rgb(var(--color-fg-accent) / 0.75), 0 0 28px 6px rgb(var(--color-fg-accent) / 0.55);
+    filter: brightness(1.18);
+  }
+}
+
+.message-flash .bubble {
+  animation: bubble-glow 2.4s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .message-flash .bubble {
+    animation: none;
+    box-shadow: 0 0 0 3px rgb(var(--color-fg-accent) / 0.75);
+  }
+}
+
+html[data-theme='dark'] .chat-wallpaper {
+  background-color: rgb(14 17 23);
+  background-image: radial-gradient(60rem 40rem at 10% -10%, rgb(124 108 255 / 0.1), transparent 60%);
+  background-repeat: no-repeat;
+}
+@media (prefers-color-scheme: dark) {
+  html[data-theme='system'] .chat-wallpaper {
+    background-color: rgb(14 17 23);
+    background-image: radial-gradient(60rem 40rem at 10% -10%, rgb(124 108 255 / 0.1), transparent 60%);
+    background-repeat: no-repeat;
+  }
+}
+
+/* Desktop app: a 32px strip replaces the system title bar; the native window buttons sit on its right. */
+html.is-desktop body {
+  padding-top: 32px;
+}
+html.is-desktop .h-screen {
+  height: calc(100vh - 32px);
+}
+.desktop-drag {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 138px;
+  height: 32px;
+  background: rgb(var(--color-bg-panel));
+  -webkit-app-region: drag;
+  z-index: 9999;
+}
+html:not(.is-desktop) .desktop-drag {
+  display: none;
+}
+html.is-desktop .min-h-screen {
+  min-height: calc(100vh - 32px);
+}
+
+/* Desktop app: the messenger fills the whole window, no floating card around it. */
+html.is-desktop .app-shell {
+  border-radius: 0;
+  border: 0;
+  box-shadow: none;
+}
+html.is-desktop .app-shell-parent {
+  padding: 0;
+}
+html.is-desktop body {
+  background: rgb(var(--color-bg-panel));
+}

@@ -1,0 +1,4 @@
+# FLUX is a private, self-hosted messenger.
+# Indexing is disabled by default; change this if you host a public instance.
+User-agent: *
+Disallow: /

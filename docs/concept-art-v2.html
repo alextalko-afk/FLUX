@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FLUX: концепт-борд v2</title>
+<style>
+  :root { font-family: Inter, 'Segoe UI', system-ui, sans-serif; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #07090d; color: #e9edf5; padding: 34px 28px 70px; -webkit-font-smoothing: antialiased; }
+  h1 { font-size: 26px; letter-spacing: -.02em; }
+  .lead { color: #8791a5; margin: 6px 0 28px; font-size: 14px; max-width: 780px; line-height: 1.55; }
+  h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .14em; color: #8f84ff; margin: 36px 0 12px; font-weight: 700; }
+  .row { display: grid; gap: 26px; }
+  .two { grid-template-columns: repeat(auto-fit, minmax(540px, 1fr)); }
+  .three { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+  .cap { color: #8791a5; font-size: 12.5px; margin-top: 9px; line-height: 1.5; }
+  svg.i { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+  svg.s { width: 16px; height: 16px; } svg.l { width: 24px; height: 24px; }
+
+  .frame { --bg:#0b0d13; --panel:#13161e; --elev:#1b202d; --hover:#1f2535; --active:#252b3f; --line:#222735; --fg:#eceff6; --mute:#8993a8;
+           --accent:#7c6cff; --accent2:#a99dff; --bin:#1d2230; --bout:#5b4de2; --wall:#0d1016; --ok:#35d39a; --err:#ff6b7a;
+           background: var(--panel); color: var(--fg); border-radius: 16px; border: 1px solid var(--line); overflow: hidden; box-shadow: 0 24px 60px rgba(0,0,0,.55); }
+  .frame.light { --bg:#f3f5fa; --panel:#fff; --elev:#f0f2f8; --hover:#eceff7; --active:#e8eafc; --line:#e5e8f0; --fg:#161a26; --mute:#778095;
+           --accent:#6657ee; --accent2:#4a3fd0; --bin:#fff; --bout:#6657ee; --wall:#eff1f8; box-shadow: 0 24px 60px rgba(30,40,90,.16); }
+
+  .desk { display: grid; grid-template-columns: 208px 288px 1fr; height: 480px; }
+  /* боковая панель */
+  .side { background: var(--bg); border-right: 1px solid var(--line); padding: 16px 12px; display: flex; flex-direction: column; gap: 2px; }
+  .me { display: flex; align-items: center; gap: 10px; padding: 4px 6px 16px; }
+  .me b { font-size: 14px; display: block; } .me small { color: var(--mute); font-size: 12px; }
+  .nv { display: flex; align-items: center; gap: 12px; padding: 9px 10px; border-radius: 10px; color: var(--mute); font-size: 14px; font-weight: 500; position: relative; }
+  .nv.on { color: var(--fg); background: var(--active); }
+  .nv.on::before { content: ''; position: absolute; left: -12px; top: 9px; bottom: 9px; width: 3px; border-radius: 0 3px 3px 0; background: var(--accent); }
+  .nv.on svg { color: var(--accent2); }
+  .nv em { margin-left: auto; font-style: normal; background: var(--accent); color: #fff; border-radius: 99px; font-size: 11px; font-weight: 700; padding: 1px 7px; }
+  .grow { flex: 1; }
+  /* список */
+  .list { border-right: 1px solid var(--line); display: flex; flex-direction: column; min-width: 0; background: var(--panel); }
+  .lh { padding: 16px 16px 10px; font-weight: 700; font-size: 17px; display: flex; justify-content: space-between; align-items: center; letter-spacing: -.01em; }
+  .lh svg { color: var(--mute); }
+  .search { margin: 0 14px 10px; padding: 9px 12px; border-radius: 10px; background: var(--elev); color: var(--mute); font-size: 13px; display: flex; gap: 8px; align-items: center; }
+  .chips { display: flex; gap: 6px; padding: 0 14px 8px; font-size: 12.5px; font-weight: 500; }
+  .chips span { padding: 5px 12px; border-radius: 8px; color: var(--mute); }
+  .chips .on { background: var(--active); color: var(--fg); }
+  .chat { display: flex; gap: 12px; align-items: center; padding: 10px 14px; position: relative; }
+  .chat.on { background: var(--active); } .chat.on::before { content: ''; position: absolute; left: 0; top: 10px; bottom: 10px; width: 3px; background: var(--accent); border-radius: 0 3px 3px 0; }
+  .av { border-radius: 50%; display: grid; place-items: center; color: #fff; font-weight: 700; flex: none; width: 46px; height: 46px; font-size: 14px; position: relative; letter-spacing: .02em; }
+  .av.on::after { content: ''; position: absolute; right: -1px; bottom: -1px; width: 12px; height: 12px; background: var(--ok); border: 2.5px solid var(--panel); border-radius: 50%; }
+  .meta { min-width: 0; flex: 1; }
+  .nm { font-weight: 600; font-size: 14.5px; display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+  .nm span { display: flex; align-items: center; gap: 5px; } .nm svg { color: var(--ok); }
+  .nm small { color: var(--mute); font-weight: 500; font-size: 11.5px; font-variant-numeric: tabular-nums; }
+  .pv { color: var(--mute); font-size: 13px; display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 2px; }
+  .pv > span:first-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bd { background: var(--accent); color: #fff; border-radius: 99px; font-size: 11px; font-weight: 700; padding: 1px 7px; min-width: 20px; text-align: center; }
+  /* чат */
+  .main { background: var(--wall); display: flex; flex-direction: column; min-width: 0; position: relative; }
+  .head { padding: 10px 18px; background: var(--panel); border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 12px; }
+  .head b { display: block; font-size: 15px; } .head small { font-size: 12.5px; color: var(--ok); }
+  .acts { margin-left: auto; display: flex; gap: 6px; color: var(--mute); } .acts span { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 10px; }
+  .acts span:hover { background: var(--hover); }
+  .msgs { flex: 1; padding: 14px 22px; display: flex; flex-direction: column; gap: 3px; overflow: hidden; background-image: radial-gradient(60% 40% at 8% 0%, rgba(124,108,255,.10), transparent 70%); }
+  .light .msgs { background-image: radial-gradient(60% 40% at 8% 0%, rgba(102,87,238,.07), transparent 70%); }
+  .day { align-self: center; font-size: 11.5px; font-weight: 600; color: var(--mute); margin: 4px 0 8px; }
+  .b { max-width: 66%; padding: 8px 12px 6px; font-size: 14px; line-height: 1.42; border-radius: 16px; }
+  .b time { float: right; margin: 5px 0 0 12px; font-size: 10.5px; opacity: .62; display: inline-flex; align-items: center; gap: 3px; font-variant-numeric: tabular-nums; }
+  .in { background: var(--bin); align-self: flex-start; border-bottom-left-radius: 4px; margin-bottom: 5px; }
+  .light .in { box-shadow: 0 1px 2px rgba(30,40,90,.10); }
+  .out { background: var(--bout); color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; margin-bottom: 5px; }
+  .out + .out { border-top-right-radius: 4px; margin-top: -2px; } .in + .in { border-top-left-radius: 4px; }
+  .reply { border-left: 2px solid var(--accent2); padding: 1px 8px; margin-bottom: 4px; font-size: 12.5px; opacity: .9; } .reply b { display: block; color: var(--accent2); font-size: 12px; }
+  .out .reply { border-color: rgba(255,255,255,.7); } .out .reply b { color: #fff; }
+  .rx { display: inline-flex; align-items: center; gap: 4px; margin-top: 5px; font-size: 12px; font-weight: 600; background: rgba(255,255,255,.14); padding: 2px 8px; border-radius: 99px; }
+  .comp { margin: 6px 16px 14px; background: var(--panel); border: 1px solid var(--line); border-radius: 16px; display: flex; align-items: center; gap: 4px; padding: 6px 6px 6px 12px; color: var(--mute); }
+  .comp .t { flex: 1; font-size: 14px; padding: 6px 4px; }
+  .send { width: 38px; height: 38px; border-radius: 12px; background: var(--accent); color: #fff; display: grid; place-items: center; }
+
+  /* вход */
+  .login { height: 480px; display: grid; place-items: center; background: radial-gradient(60% 60% at 18% 0%, rgba(124,108,255,.26), transparent 70%), radial-gradient(50% 50% at 92% 100%, rgba(53,211,154,.10), transparent 70%), var(--bg); }
+  .card { width: 332px; background: var(--panel); border: 1px solid var(--line); border-radius: 20px; padding: 26px; box-shadow: 0 30px 70px rgba(0,0,0,.45); }
+  .logo { width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(135deg,#8f80ff,#5a4de0); display: grid; place-items: center; font-weight: 800; color: #fff; }
+  .card h3 { font-size: 21px; margin: 14px 0 4px; letter-spacing: -.01em; } .card p { color: var(--mute); font-size: 13px; margin-bottom: 18px; }
+  .fl { margin-bottom: 12px; } .fl label { display: block; font-size: 12px; color: var(--mute); margin-bottom: 5px; font-weight: 500; }
+  .fl div { background: var(--elev); border: 1px solid var(--line); border-radius: 10px; padding: 11px 13px; font-size: 14px; }
+  .btn { background: var(--accent); color: #fff; text-align: center; padding: 11px; border-radius: 10px; font-weight: 600; font-size: 14px; margin-top: 4px; }
+  .lnk { text-align: center; color: var(--accent2); font-size: 13px; margin-top: 14px; font-weight: 500; }
+
+  /* настройки */
+  .set { display: grid; grid-template-columns: 210px 1fr; height: 420px; }
+  .nav { border-right: 1px solid var(--line); padding: 14px 10px; background: var(--bg); } .nav div { padding: 9px 12px; border-radius: 9px; color: var(--mute); font-size: 14px; margin-bottom: 2px; font-weight: 500; }
+  .nav .on { background: var(--active); color: var(--fg); }
+  .pane { padding: 20px 24px; background: var(--bg); } .pane h4 { font-size: 11.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--mute); margin: 0 0 8px 4px; font-weight: 700; }
+  .grp { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; margin-bottom: 18px; }
+  .sc { padding: 13px 16px; display: flex; align-items: center; justify-content: space-between; font-size: 14px; font-weight: 500; } .sc + .sc { border-top: 1px solid var(--line); }
+  .sc small { display: block; color: var(--mute); font-size: 12.5px; margin-top: 2px; font-weight: 400; }
+  .tg { width: 40px; height: 24px; border-radius: 99px; background: var(--accent); position: relative; flex: none; } .tg::after { content:''; position:absolute; right:3px; top:3px; width:18px; height:18px; border-radius:50%; background:#fff; }
+  .tg.off { background: var(--elev); box-shadow: inset 0 0 0 1px var(--line); } .tg.off::after { right: auto; left: 3px; background: var(--mute); }
+  .sw { display: flex; gap: 8px; } .sw i { width: 22px; height: 22px; border-radius: 50%; display: block; box-shadow: 0 0 0 2px var(--panel); } .sw .sel { box-shadow: 0 0 0 2px var(--panel), 0 0 0 4px var(--fg); }
+
+  /* звонок */
+  .call { height: 480px; display: grid; place-items: center; text-align: center; background: radial-gradient(50% 50% at 50% 32%, rgba(124,108,255,.34), transparent 70%), #0a0c12; }
+  .big { width: 112px; height: 112px; font-size: 36px; margin: 0 auto 18px; box-shadow: 0 0 0 10px rgba(124,108,255,.14), 0 0 0 22px rgba(124,108,255,.07); }
+  .ctl { display: flex; gap: 16px; justify-content: center; margin-top: 32px; }
+  .ctl i { width: 54px; height: 54px; border-radius: 50%; background: var(--elev); display: grid; place-items: center; }
+  .ctl .end { background: var(--err); }
+  .secure { display: inline-flex; align-items: center; gap: 6px; color: var(--ok); font-size: 13.5px; margin-top: 8px; }
+
+  /* профиль группы */
+  .prof { height: 480px; display: grid; grid-template-rows: auto 1fr; background: var(--bg); }
+  .cover { padding: 28px 24px 0; text-align: center; background: linear-gradient(180deg, rgba(124,108,255,.22), transparent); }
+  .cover .av { width: 84px; height: 84px; font-size: 28px; margin: 0 auto 10px; }
+  .tabs { display: flex; justify-content: center; gap: 22px; margin-top: 16px; color: var(--mute); font-size: 13px; font-weight: 500; border-bottom: 1px solid var(--line); } .tabs span { padding-bottom: 10px; } .tabs .on { color: var(--accent2); border-bottom: 2px solid var(--accent); }
+  .mem { padding: 8px 20px; display: grid; gap: 2px; align-content: start; }
+  .mem div { display: flex; align-items: center; gap: 12px; padding: 8px 10px; border-radius: 10px; font-size: 14px; font-weight: 500; } .mem div small { margin-left: auto; color: var(--mute); font-weight: 400; font-size: 12.5px; }
+  .av.s { width: 36px; height: 36px; font-size: 12px; }
+  .lock { display: inline-flex; align-items: center; gap: 6px; background: rgba(53,211,154,.13); color: var(--ok); padding: 4px 11px; border-radius: 99px; font-size: 12.5px; margin-top: 10px; font-weight: 500; }
+  .empty { height: 480px; display: grid; place-items: center; text-align: center; background: var(--wall); }
+  .art { width: 88px; height: 88px; border-radius: 26px; background: linear-gradient(135deg, rgba(124,108,255,.30), rgba(53,211,154,.14)); display: grid; place-items: center; color: var(--accent2); margin: 0 auto 18px; }
+  .empty h3 { font-size: 18px; margin-bottom: 6px; } .empty p { color: var(--mute); font-size: 13.5px; max-width: 270px; margin: 0 auto 16px; line-height: 1.5; }
+  .empty .btn { display: inline-block; padding: 10px 22px; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="chat" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></symbol>
+  <symbol id="search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></symbol>
+  <symbol id="users" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9.5" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/></symbol>
+  <symbol id="phone" viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></symbol>
+  <symbol id="gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></symbol>
+  <symbol id="edit" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></symbol>
+  <symbol id="lock" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+  <symbol id="more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></symbol>
+  <symbol id="clip" viewBox="0 0 24 24"><path d="M21.4 11.1l-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5"/></symbol>
+  <symbol id="smile" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/></symbol>
+  <symbol id="send" viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></symbol>
+  <symbol id="checks" viewBox="0 0 24 24"><path d="M2 12l5 5L17 7M12 16l1 1L23 7"/></symbol>
+  <symbol id="heart" viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></symbol>
+  <symbol id="mic" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M19 10v1a7 7 0 0 1-14 0v-1M12 18v4"/></symbol>
+  <symbol id="video" viewBox="0 0 24 24"><path d="M23 7l-7 5 7 5z"/><rect x="1" y="5" width="15" height="14" rx="2"/></symbol>
+  <symbol id="screen" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></symbol>
+  <symbol id="hang" viewBox="0 0 24 24"><path d="M10.7 13.3a16 16 0 0 1-2.4-3l1.3-1.3a2 2 0 0 0 .5-2.1c-.3-.9-.6-1.8-.7-2.8A2 2 0 0 0 7.4 2.4h-3a2 2 0 0 0-2 2.2 19.8 19.8 0 0 0 3.1 8.6M2 22L22 2" transform="rotate(135 12 12)"/></symbol>
+  <symbol id="bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/></symbol>
+</svg>
+
+<h1>FLUX · концепт-борд v2</h1>
+<p class="lead">Без смайликов: только линейные иконки. Профиль группы и звонок оставлены как утверждено. Остальное переделано: широкая боковая панель с полоской текущего раздела, плотный список с акцентной полоской, группировка сообщений, поле ввода одним блоком, настройки сгруппированы.</p>
+
+<h2>1. Главный экран · тёмная и светлая</h2>
+<div class="row two">
+  <div>
+    <div class="frame"><div class="desk">
+      <div class="side">
+        <div class="me"><div class="av on" style="background:#6a5cf2;width:38px;height:38px;font-size:13px">СТ</div><div><b>Саша Талько</b><small>@negative</small></div></div>
+        <div class="nv on"><svg class="i"><use href="#chat"/></svg>Чаты<em>4</em></div>
+        <div class="nv"><svg class="i"><use href="#search"/></svg>Поиск</div>
+        <div class="nv"><svg class="i"><use href="#users"/></svg>Контакты</div>
+        <div class="nv"><svg class="i"><use href="#phone"/></svg>Звонки</div>
+        <div class="grow"></div>
+        <div class="nv"><svg class="i"><use href="#gear"/></svg>Настройки</div>
+      </div>
+      <div class="list">
+        <div class="lh">Чаты <svg class="i"><use href="#edit"/></svg></div>
+        <div class="search"><svg class="i s"><use href="#search"/></svg>Поиск</div>
+        <div class="chips"><span class="on">Все</span><span>Личные</span><span>Группы</span><span>Каналы</span></div>
+        <div class="chat on"><div class="av on" style="background:#6a5cf2">АН</div><div class="meta"><div class="nm"><span>Анна</span><small>11:49</small></div><div class="pv"><span>Скинь потом скриншоты</span></div></div></div>
+        <div class="chat"><div class="av" style="background:#1fb37a">КФ</div><div class="meta"><div class="nm"><span>Команда FLUX <svg class="i s"><use href="#lock"/></svg></span><small>11:20</small></div><div class="pv"><span>Дима: готово, смотри</span><span class="bd">3</span></div></div></div>
+        <div class="chat"><div class="av" style="background:#f0954a">НФ</div><div class="meta"><div class="nm"><span>Новости FLUX</span><small>вчера</small></div><div class="pv"><span>Вышла версия 1.2</span></div></div></div>
+        <div class="chat"><div class="av" style="background:#e5568a">МА</div><div class="meta"><div class="nm"><span>Мама</span><small>пн</small></div><div class="pv"><span>позвони вечером</span><span class="bd">1</span></div></div></div>
+      </div>
+      <div class="main">
+        <div class="head"><div class="av on" style="background:#6a5cf2;width:40px;height:40px">АН</div><div><b>Анна</b><small>в сети</small></div>
+          <div class="acts"><span><svg class="i"><use href="#search"/></svg></span><span><svg class="i"><use href="#phone"/></svg></span><span><svg class="i"><use href="#more"/></svg></span></div></div>
+        <div class="msgs">
+          <div class="day">Сегодня</div>
+          <div class="b in">Привет! Как дела с проектом?<time>11:49</time></div>
+          <div class="b out">Всё отлично, каталог ботов уже готов<time>11:49 <svg class="i s"><use href="#checks"/></svg></time><br><span class="rx"><svg class="i s"><use href="#heart"/></svg>2</span></div>
+          <div class="b in"><div class="reply"><b>Вы</b>Всё отлично, каталог…</div>А звонки уже работают?<time>11:50</time></div>
+          <div class="b out">Да, групповые работают.<time>11:50 <svg class="i s"><use href="#checks"/></svg></time></div>
+          <div class="b out">Личные ещё проверяю.<time>11:51 <svg class="i s"><use href="#checks"/></svg></time></div>
+        </div>
+        <div class="comp"><svg class="i"><use href="#clip"/></svg><div class="t">Напишите сообщение</div><svg class="i"><use href="#smile"/></svg><div class="send"><svg class="i s"><use href="#send"/></svg></div></div>
+      </div>
+    </div></div>
+    <p class="cap">Тёмная. Текущий раздел отмечен полоской слева, выбранный чат тоже. Исходящие подряд сливаются в один блок, время и галочки внутри пузыря, поле ввода одной плашкой.</p>
+  </div>
+
+  <div>
+    <div class="frame light"><div class="desk">
+      <div class="side">
+        <div class="me"><div class="av on" style="background:#6a5cf2;width:38px;height:38px;font-size:13px">СТ</div><div><b>Саша Талько</b><small>@negative</small></div></div>
+        <div class="nv on"><svg class="i"><use href="#chat"/></svg>Чаты<em>4</em></div>
+        <div class="nv"><svg class="i"><use href="#search"/></svg>Поиск</div>
+        <div class="nv"><svg class="i"><use href="#users"/></svg>Контакты</div>
+        <div class="nv"><svg class="i"><use href="#phone"/></svg>Звонки</div>
+        <div class="grow"></div>
+        <div class="nv"><svg class="i"><use href="#gear"/></svg>Настройки</div>
+      </div>
+      <div class="list">
+        <div class="lh">Чаты <svg class="i"><use href="#edit"/></svg></div>
+        <div class="search"><svg class="i s"><use href="#search"/></svg>Поиск</div>
+        <div class="chips"><span class="on">Все</span><span>Личные</span><span>Группы</span><span>Каналы</span></div>
+        <div class="chat on"><div class="av on" style="background:#6a5cf2">АН</div><div class="meta"><div class="nm"><span>Анна</span><small>11:49</small></div><div class="pv"><span>Скинь потом скриншоты</span></div></div></div>
+        <div class="chat"><div class="av" style="background:#1fb37a">КФ</div><div class="meta"><div class="nm"><span>Команда FLUX <svg class="i s"><use href="#lock"/></svg></span><small>11:20</small></div><div class="pv"><span>Дима: готово, смотри</span><span class="bd">3</span></div></div></div>
+        <div class="chat"><div class="av" style="background:#f0954a">НФ</div><div class="meta"><div class="nm"><span>Новости FLUX</span><small>вчера</small></div><div class="pv"><span>Вышла версия 1.2</span></div></div></div>
+        <div class="chat"><div class="av" style="background:#e5568a">МА</div><div class="meta"><div class="nm"><span>Мама</span><small>пн</small></div><div class="pv"><span>позвони вечером</span><span class="bd">1</span></div></div></div>
+      </div>
+      <div class="main">
+        <div class="head"><div class="av on" style="background:#6a5cf2;width:40px;height:40px">АН</div><div><b>Анна</b><small>в сети</small></div>
+          <div class="acts"><span><svg class="i"><use href="#search"/></svg></span><span><svg class="i"><use href="#phone"/></svg></span><span><svg class="i"><use href="#more"/></svg></span></div></div>
+        <div class="msgs">
+          <div class="day">Сегодня</div>
+          <div class="b in">Привет! Как дела с проектом?<time>11:49</time></div>
+          <div class="b out">Всё отлично, каталог ботов уже готов<time>11:49 <svg class="i s"><use href="#checks"/></svg></time><br><span class="rx"><svg class="i s"><use href="#heart"/></svg>2</span></div>
+          <div class="b in"><div class="reply"><b>Вы</b>Всё отлично, каталог…</div>А звонки уже работают?<time>11:50</time></div>
+          <div class="b out">Да, групповые работают.<time>11:50 <svg class="i s"><use href="#checks"/></svg></time></div>
+          <div class="b out">Личные ещё проверяю.<time>11:51 <svg class="i s"><use href="#checks"/></svg></time></div>
+        </div>
+        <div class="comp"><svg class="i"><use href="#clip"/></svg><div class="t">Напишите сообщение</div><svg class="i"><use href="#smile"/></svg><div class="send"><svg class="i s"><use href="#send"/></svg></div></div>
+      </div>
+    </div></div>
+    <p class="cap">Светлая. Та же сетка и акцент, пузыри отделены тенью, фон холодно-белый.</p>
+  </div>
+</div>
+
+<h2>2. Вход, пустой экран, настройки</h2>
+<div class="row three">
+  <div><div class="frame"><div class="login"><div class="card">
+    <div class="logo">F</div><h3>С возвращением</h3><p>Войдите по почте и паролю</p>
+    <div class="fl"><label>Почта</label><div>name@example.com</div></div>
+    <div class="fl"><label>Пароль</label><div>••••••••••</div></div>
+    <div class="btn">Войти</div><div class="lnk">Войти по QR-коду</div></div></div></div>
+    <p class="cap">Вход: подписи над полями, одна кнопка, вторичный способ ссылкой.</p></div>
+
+  <div><div class="frame"><div class="empty"><div><div class="art"><svg class="i l" style="width:38px;height:38px"><use href="#chat"/></svg></div><h3>Выберите чат</h3><p>Или начните новый разговор с другом, в группе или канале.</p><div class="btn">Новый чат</div></div></div></div>
+    <p class="cap">Пустое состояние с действием вместо пустого поля.</p></div>
+
+  <div><div class="frame"><div class="set">
+    <div class="nav"><div class="on">Внешний вид</div><div>Уведомления</div><div>Приватность</div><div>Безопасность</div><div>Боты</div><div>Язык</div></div>
+    <div class="pane">
+      <h4>Оформление</h4>
+      <div class="grp"><div class="sc"><div>Акцент<small>Цвет кнопок и пузырей</small></div><div class="sw"><i style="background:#7c6cff" class="sel"></i><i style="background:#35d39a"></i><i style="background:#ff7aa2"></i><i style="background:#ffb454"></i></div></div>
+        <div class="sc"><div>Светлая тема<small>Как в системе</small></div><div class="tg off"></div></div></div>
+      <h4>Сообщения</h4>
+      <div class="grp"><div class="sc"><div>Отправка по Enter<small>Shift+Enter: новая строка</small></div><div class="tg"></div></div>
+        <div class="sc"><div>Тихие часы<small>23:00 – 08:00</small></div><div class="tg"></div></div></div>
+    </div></div></div>
+    <p class="cap">Настройки: заголовки групп, строки с пояснением и переключателями.</p></div>
+</div>
+
+<h2>3. Звонок и профиль группы · как утверждено, без смайликов</h2>
+<div class="row two">
+  <div><div class="frame"><div class="call"><div>
+    <div class="av big" style="background:#6a5cf2">АН</div><b style="font-size:22px">Анна</b>
+    <div class="secure"><svg class="i s"><use href="#lock"/></svg>12:08 · зашифрован</div>
+    <div class="ctl"><i><svg class="i"><use href="#mic"/></svg></i><i><svg class="i"><use href="#video"/></svg></i><i><svg class="i"><use href="#screen"/></svg></i><i class="end"><svg class="i"><use href="#hang"/></svg></i></div></div></div></div>
+    <p class="cap">Звонок: аватар в «ореоле», таймер, круглые кнопки, красная только для завершения.</p></div>
+
+  <div><div class="frame"><div class="prof">
+    <div class="cover"><div class="av" style="background:#1fb37a">КФ</div><b style="font-size:20px">Команда FLUX</b><div class="cap" style="margin:4px 0 0">24 участника · 5 в сети</div><div class="lock"><svg class="i s"><use href="#lock"/></svg>сквозное шифрование</div>
+      <div class="tabs"><span class="on">Участники</span><span>Медиа</span><span>Файлы</span><span>Ссылки</span></div></div>
+    <div class="mem">
+      <div><div class="av s on" style="background:#6a5cf2">ДМ</div>Дима <small>владелец</small></div>
+      <div><div class="av s on" style="background:#e5568a">АН</div>Анна <small>админ</small></div>
+      <div><div class="av s" style="background:#f0954a">ИВ</div>Иван <small>был(а) вчера</small></div>
+      <div><div class="av s" style="background:#22a7f0">СК</div>Саша <small>в сети</small></div>
+    </div></div></div>
+    <p class="cap">Профиль группы: градиентная шапка, метка шифрования, вкладки и участники с ролями.</p></div>
+</div>
+</body>
+</html>

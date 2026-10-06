@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FLUX: концепт-борд</title>
+<style>
+  :root { font-family: Inter, 'Segoe UI', system-ui, sans-serif; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #07090d; color: #e9edf5; padding: 34px 28px 70px; }
+  h1 { font-size: 26px; letter-spacing: -.02em; }
+  .lead { color: #8791a5; margin: 6px 0 30px; font-size: 14px; max-width: 760px; line-height: 1.5; }
+  h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .12em; color: #7c6cff; margin: 34px 0 12px; }
+  .row { display: grid; gap: 26px; }
+  .two { grid-template-columns: repeat(auto-fit, minmax(520px, 1fr)); }
+  .three { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+  .cap { color: #8791a5; font-size: 12.5px; margin-top: 8px; line-height: 1.45; }
+
+  /* тема */
+  .frame { --bg:#0b0d13; --panel:#14171f; --elev:#1c2130; --hover:#202636; --active:#262c40; --line:#232836; --fg:#e9edf5; --mute:#8791a5;
+           --accent:#7c6cff; --accent2:#a99dff; --bin:#1e2331; --bout:#5a4de0; --wall:#0e1117; --ok:#3ddc97; --err:#ff6b7a;
+           background: var(--panel); color: var(--fg); border-radius: 18px; border: 1px solid var(--line); overflow: hidden;
+           box-shadow: 0 24px 60px rgba(0,0,0,.55); position: relative; }
+  .frame.light { --bg:#f4f6fb; --panel:#ffffff; --elev:#f1f3f9; --hover:#eef1f8; --active:#e7e9fb; --line:#e6e9f1; --fg:#171b27; --mute:#7a8396;
+           --accent:#6a5bf0; --accent2:#4b3fd1; --bin:#ffffff; --bout:#6a5bf0; --wall:#f1f3fa; box-shadow: 0 24px 60px rgba(30,40,80,.18); }
+  .desk { display: grid; grid-template-columns: 72px 270px 1fr; height: 470px; }
+  .rail { background: var(--bg); border-right: 1px solid var(--line); padding: 14px 0; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .logo { width: 38px; height: 38px; border-radius: 12px; background: linear-gradient(135deg,#8f80ff,#5a4de0); display: grid; place-items: center; font-weight: 800; color: #fff; margin-bottom: 10px; }
+  .ico { width: 44px; height: 44px; border-radius: 13px; display: grid; place-items: center; color: var(--mute); font-size: 18px; position: relative; }
+  .ico.on { background: var(--active); color: var(--accent2); }
+  .ico em { position: absolute; top: 4px; right: 3px; background: var(--accent); color: #fff; border-radius: 99px; font-size: 10px; font-style: normal; font-weight: 700; padding: 1px 5px; }
+  .list { border-right: 1px solid var(--line); display: flex; flex-direction: column; min-width: 0; }
+  .lh { padding: 16px 16px 8px; font-weight: 700; font-size: 18px; display: flex; justify-content: space-between; }
+  .search { margin: 4px 14px 10px; padding: 9px 14px; border-radius: 12px; background: var(--elev); color: var(--mute); font-size: 13px; }
+  .chips { display: flex; gap: 6px; padding: 0 14px 10px; font-size: 12px; }
+  .chips span { padding: 4px 11px; border-radius: 99px; color: var(--mute); }
+  .chips .on { background: var(--accent); color: #fff; }
+  .chat { display: flex; gap: 12px; align-items: center; padding: 10px 12px; margin: 0 8px 2px; border-radius: 14px; }
+  .chat.on { background: var(--active); }
+  .av { border-radius: 50%; display: grid; place-items: center; color: #fff; font-weight: 700; flex: none; width: 46px; height: 46px; font-size: 14px; position: relative; }
+  .av.on::after { content: ''; position: absolute; right: 0; bottom: 0; width: 12px; height: 12px; background: var(--ok); border: 2px solid var(--panel); border-radius: 50%; }
+  .meta { min-width: 0; flex: 1; }
+  .nm { font-weight: 600; font-size: 14px; display: flex; justify-content: space-between; }
+  .nm small { color: var(--mute); font-weight: 400; font-size: 11px; }
+  .pv { color: var(--mute); font-size: 13px; display: flex; justify-content: space-between; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bd { background: var(--accent); color: #fff; border-radius: 99px; font-size: 11px; font-weight: 700; padding: 1px 7px; }
+  .main { background: var(--wall); display: flex; flex-direction: column; position: relative; min-width: 0; }
+  .glow::before { content: ''; position: absolute; inset: 0; background: radial-gradient(60% 40% at 10% 0%, rgba(124,108,255,.14), transparent 70%); pointer-events: none; }
+  .head { padding: 11px 18px; background: var(--panel); border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 12px; z-index: 1; }
+  .head b { display: block; font-size: 15px; } .head span { font-size: 12px; color: var(--ok); }
+  .head .acts { margin-left: auto; display: flex; gap: 14px; color: var(--mute); }
+  .msgs { flex: 1; padding: 16px 20px; display: flex; flex-direction: column; gap: 5px; z-index: 1; overflow: hidden; }
+  .b { max-width: 68%; padding: 8px 12px 5px; border-radius: 18px; font-size: 14px; line-height: 1.4; }
+  .b i { display: block; text-align: right; font-style: normal; font-size: 10.5px; opacity: .6; margin-top: 2px; }
+  .in { background: var(--bin); align-self: flex-start; border-bottom-left-radius: 5px; }
+  .light .in { box-shadow: 0 1px 2px rgba(30,40,80,.1); }
+  .out { background: var(--bout); color: #fff; align-self: flex-end; border-bottom-right-radius: 5px; }
+  .day { align-self: center; font-size: 11px; color: var(--mute); background: var(--elev); padding: 3px 10px; border-radius: 99px; margin-bottom: 3px; }
+  .react { display: inline-flex; gap: 4px; margin-top: 4px; font-size: 12px; background: rgba(255,255,255,.14); padding: 2px 8px; border-radius: 99px; }
+  .reply { border-left: 3px solid var(--accent2); padding: 2px 8px; margin-bottom: 4px; font-size: 12px; opacity: .85; background: rgba(255,255,255,.07); border-radius: 4px; }
+  .comp { margin: 8px 16px 14px; display: flex; gap: 10px; align-items: center; z-index: 1; }
+  .field { flex: 1; padding: 12px 18px; border-radius: 16px; background: var(--panel); border: 1px solid var(--line); color: var(--mute); font-size: 14px; }
+  .send { width: 42px; height: 42px; border-radius: 14px; background: linear-gradient(135deg,#8f80ff,#5a4de0); color: #fff; display: grid; place-items: center; box-shadow: 0 6px 18px -4px rgba(124,108,255,.6); }
+
+  /* вход */
+  .login { height: 470px; display: grid; place-items: center; background: radial-gradient(60% 60% at 20% 0%, rgba(124,108,255,.28), transparent 70%), radial-gradient(50% 50% at 90% 100%, rgba(61,220,151,.12), transparent 70%), var(--bg); }
+  .card { width: 340px; background: var(--panel); border: 1px solid var(--line); border-radius: 22px; padding: 26px; box-shadow: 0 30px 70px rgba(0,0,0,.5); }
+  .card h3 { font-size: 22px; margin: 12px 0 4px; } .card p { color: var(--mute); font-size: 13px; margin-bottom: 16px; }
+  .in-f { background: var(--elev); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; font-size: 14px; color: var(--mute); margin-bottom: 10px; }
+  .btn { background: linear-gradient(135deg,#8f80ff,#5a4de0); color: #fff; text-align: center; padding: 12px; border-radius: 12px; font-weight: 600; margin-top: 6px; box-shadow: 0 8px 20px -6px rgba(124,108,255,.7); }
+  .lnk { text-align: center; color: var(--accent2); font-size: 13px; margin-top: 12px; }
+
+  /* настройки */
+  .set { display: grid; grid-template-columns: 220px 1fr; height: 400px; }
+  .nav { border-right: 1px solid var(--line); padding: 14px 10px; } .nav div { padding: 10px 12px; border-radius: 10px; color: var(--mute); font-size: 14px; margin-bottom: 2px; }
+  .nav .on { background: var(--active); color: var(--fg); }
+  .pane { padding: 20px 26px; display: grid; gap: 12px; align-content: start; background: var(--bg); }
+  .sc { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; font-size: 14px; }
+  .sc small { display: block; color: var(--mute); font-size: 12px; margin-top: 2px; }
+  .tg { width: 42px; height: 24px; border-radius: 99px; background: var(--accent); position: relative; } .tg::after { content:''; position:absolute; right:3px; top:3px; width:18px; height:18px; border-radius:50%; background:#fff; }
+  .tg.off { background: var(--elev); border: 1px solid var(--line); } .tg.off::after { right: auto; left: 3px; background: var(--mute); }
+  .sw { display: flex; gap: 10px; } .sw i { width: 26px; height: 26px; border-radius: 50%; display: block; border: 2px solid transparent; } .sw .sel { border-color: #fff; }
+
+  /* звонок */
+  .call { height: 470px; display: grid; place-items: center; text-align: center; background: radial-gradient(50% 50% at 50% 30%, rgba(124,108,255,.35), transparent 70%), #0a0c12; }
+  .big { width: 112px; height: 112px; font-size: 36px; margin: 0 auto 16px; box-shadow: 0 0 0 10px rgba(124,108,255,.14), 0 0 0 22px rgba(124,108,255,.07); }
+  .ctl { display: flex; gap: 16px; justify-content: center; margin-top: 30px; }
+  .ctl i { width: 54px; height: 54px; border-radius: 50%; background: var(--elev); display: grid; place-items: center; font-style: normal; font-size: 20px; }
+  .ctl .end { background: var(--err); }
+
+  /* профиль группы */
+  .prof { height: 470px; display: grid; grid-template-rows: auto 1fr; background: var(--bg); }
+  .cover { padding: 28px 24px 18px; text-align: center; background: linear-gradient(180deg, rgba(124,108,255,.22), transparent); }
+  .cover .av { width: 84px; height: 84px; font-size: 28px; margin: 0 auto 10px; }
+  .tabs { display: flex; justify-content: center; gap: 22px; margin-top: 14px; color: var(--mute); font-size: 13px; } .tabs .on { color: var(--accent2); border-bottom: 2px solid var(--accent); padding-bottom: 6px; }
+  .mem { padding: 8px 20px; display: grid; gap: 4px; }
+  .mem div { display: flex; align-items: center; gap: 12px; padding: 8px 10px; border-radius: 12px; font-size: 14px; } .mem div:hover { background: var(--hover); }
+  .mem small { margin-left: auto; color: var(--mute); }
+  .av.s { width: 36px; height: 36px; font-size: 12px; }
+  .lock { display: inline-block; background: rgba(61,220,151,.14); color: var(--ok); padding: 3px 10px; border-radius: 99px; font-size: 12px; margin-top: 8px; }
+  .empty { height: 470px; display: grid; place-items: center; text-align: center; background: var(--wall); }
+  .empty .art { width: 96px; height: 96px; border-radius: 28px; background: linear-gradient(135deg, rgba(124,108,255,.35), rgba(61,220,151,.18)); display: grid; place-items: center; font-size: 40px; margin: 0 auto 16px; }
+  .empty h3 { font-size: 19px; margin-bottom: 6px; } .empty p { color: var(--mute); font-size: 13.5px; max-width: 280px; margin: 0 auto 16px; line-height: 1.5; }
+  .empty .btn { display: inline-block; padding: 10px 22px; }
+</style>
+</head>
+<body>
+<h1>FLUX · концепт-борд</h1>
+<p class="lead">Палитра B («полночь + фиолет»), единая система: скругления 12–18 px, мягкие тени, акцентный градиент только на главных действиях, зелёный только для «в сети» и шифрования. Ниже ключевые экраны и светлая версия той же палитры.</p>
+
+<h2>1. Главный экран · тёмная и светлая тема</h2>
+<div class="row two">
+  <div>
+    <div class="frame"><div class="desk">
+      <div class="rail"><div class="logo">F</div><div class="ico on">💬<em>4</em></div><div class="ico">🔍</div><div class="ico">👥</div><div class="ico">📞</div><div class="ico" style="margin-top:auto">⚙</div></div>
+      <div class="list">
+        <div class="lh">Чаты <span style="color:var(--mute)">✎</span></div>
+        <div class="search">Поиск</div>
+        <div class="chips"><span class="on">Все</span><span>Личные</span><span>Группы</span><span>Каналы</span></div>
+        <div class="chat on"><div class="av on" style="background:#6a5cf2">АН</div><div class="meta"><div class="nm">Анна <small>11:49</small></div><div class="pv">Скинь потом скриншоты…</div></div></div>
+        <div class="chat"><div class="av" style="background:#1fb37a">КФ</div><div class="meta"><div class="nm">Команда FLUX 🔒 <small>11:20</small></div><div class="pv"><span>Дима: готово, смотри</span><span class="bd">3</span></div></div></div>
+        <div class="chat"><div class="av" style="background:#f0954a">НФ</div><div class="meta"><div class="nm">Новости FLUX <small>вчера</small></div><div class="pv">Вышла версия 1.2</div></div></div>
+        <div class="chat"><div class="av" style="background:#e5568a">МА</div><div class="meta"><div class="nm">Мама <small>пн</small></div><div class="pv"><span>позвони вечером</span><span class="bd">1</span></div></div></div>
+      </div>
+      <div class="main glow">
+        <div class="head"><div class="av on" style="background:#6a5cf2;width:40px;height:40px">АН</div><div><b>Анна</b><span>в сети</span></div><div class="acts"><span>🔍</span><span>📞</span><span>⋯</span></div></div>
+        <div class="msgs">
+          <div class="day">Сегодня</div>
+          <div class="b in">Привет! Как дела с проектом?<i>11:49</i></div>
+          <div class="b out">Всё отлично, доделал каталог ботов 🎉<span class="react">❤ 2</span><i>11:49 ✓✓</i></div>
+          <div class="b in"><div class="reply">Всё отлично, доделал…</div>А звонки уже работают?<i>11:50</i></div>
+          <div class="b out">Да, групповые работают.<i>11:50 ✓✓</i></div>
+        </div>
+        <div class="comp"><div class="field">Напишите сообщение…</div><div class="send">➤</div></div>
+      </div>
+    </div></div>
+    <p class="cap">Тёмная: узкая рейка разделов с бейджем, плотный список, фиолетовые свои пузыри, реакции под сообщением, ответ с цитатой.</p>
+  </div>
+
+  <div>
+    <div class="frame light"><div class="desk">
+      <div class="rail"><div class="logo">F</div><div class="ico on">💬<em>4</em></div><div class="ico">🔍</div><div class="ico">👥</div><div class="ico">📞</div><div class="ico" style="margin-top:auto">⚙</div></div>
+      <div class="list">
+        <div class="lh">Чаты <span style="color:var(--mute)">✎</span></div>
+        <div class="search">Поиск</div>
+        <div class="chips"><span class="on">Все</span><span>Личные</span><span>Группы</span><span>Каналы</span></div>
+        <div class="chat on"><div class="av on" style="background:#6a5cf2">АН</div><div class="meta"><div class="nm">Анна <small>11:49</small></div><div class="pv">Скинь потом скриншоты…</div></div></div>
+        <div class="chat"><div class="av" style="background:#1fb37a">КФ</div><div class="meta"><div class="nm">Команда FLUX 🔒 <small>11:20</small></div><div class="pv"><span>Дима: готово, смотри</span><span class="bd">3</span></div></div></div>
+        <div class="chat"><div class="av" style="background:#f0954a">НФ</div><div class="meta"><div class="nm">Новости FLUX <small>вчера</small></div><div class="pv">Вышла версия 1.2</div></div></div>
+        <div class="chat"><div class="av" style="background:#e5568a">МА</div><div class="meta"><div class="nm">Мама <small>пн</small></div><div class="pv"><span>позвони вечером</span><span class="bd">1</span></div></div></div>
+      </div>
+      <div class="main">
+        <div class="head"><div class="av on" style="background:#6a5cf2;width:40px;height:40px">АН</div><div><b>Анна</b><span>в сети</span></div><div class="acts"><span>🔍</span><span>📞</span><span>⋯</span></div></div>
+        <div class="msgs">
+          <div class="day">Сегодня</div>
+          <div class="b in">Привет! Как дела с проектом?<i>11:49</i></div>
+          <div class="b out">Всё отлично, доделал каталог ботов 🎉<span class="react">❤ 2</span><i>11:49 ✓✓</i></div>
+          <div class="b in"><div class="reply" style="background:rgba(0,0,0,.05)">Всё отлично, доделал…</div>А звонки уже работают?<i>11:50</i></div>
+          <div class="b out">Да, групповые работают.<i>11:50 ✓✓</i></div>
+        </div>
+        <div class="comp"><div class="field">Напишите сообщение…</div><div class="send">➤</div></div>
+      </div>
+    </div></div>
+    <p class="cap">Светлая: те же формы и акцент, фон холодно-белый, тени вместо границ у пузырей.</p>
+  </div>
+</div>
+
+<h2>2. Вход, звонок, пустой экран</h2>
+<div class="row three">
+  <div><div class="frame"><div class="login"><div class="card">
+    <div class="logo">F</div><h3>С возвращением</h3><p>Войдите в FLUX по почте и паролю</p>
+    <div class="in-f">Почта</div><div class="in-f">Пароль</div><div class="btn">Войти</div>
+    <div class="lnk">Войти по QR-коду</div></div></div></div><p class="cap">Вход: мягкое свечение фона, карточка с крупным заголовком, одна главная кнопка.</p></div>
+
+  <div><div class="frame"><div class="call"><div>
+    <div class="av big" style="background:#6a5cf2">АН</div><b style="font-size:22px">Анна</b><div style="color:var(--ok);margin-top:6px;font-size:14px">12:08 · зашифрован</div>
+    <div class="ctl"><i>🎤</i><i>📹</i><i>🖥</i><i class="end">✕</i></div></div></div></div><p class="cap">Звонок: аватар в «ореоле», таймер, круглые кнопки, красная только для завершения.</p></div>
+
+  <div><div class="frame"><div class="empty"><div><div class="art">💬</div><h3>Выберите чат</h3><p>Или начните новый разговор: с другом, группой или каналом.</p><div class="btn">Новый чат</div></div></div></div><p class="cap">Пустое состояние: понятный текст и действие вместо пустого серого поля.</p></div>
+</div>
+
+<h2>3. Настройки и профиль группы</h2>
+<div class="row two">
+  <div><div class="frame"><div class="set">
+    <div class="nav"><div class="on">Аккаунт</div><div>Внешний вид</div><div>Уведомления</div><div>Приватность</div><div>Безопасность</div><div>Боты</div><div>Язык</div></div>
+    <div class="pane">
+      <div class="sc"><div>Тема<small>Тёмная · полночь</small></div><div class="sw"><i style="background:#7c6cff" class="sel"></i><i style="background:#3ddc97"></i><i style="background:#ff7aa2"></i><i style="background:#ffb454"></i></div></div>
+      <div class="sc"><div>Уведомления<small>Звук и предпросмотр</small></div><div class="tg"></div></div>
+      <div class="sc"><div>Тихие часы<small>23:00 – 08:00</small></div><div class="tg"></div></div>
+      <div class="sc"><div>Отправка по Enter<small>Shift+Enter — новая строка</small></div><div class="tg off"></div></div>
+    </div></div></div><p class="cap">Настройки: карточки-строки с пояснением, переключатели, выбор акцента кружками.</p></div>
+
+  <div><div class="frame"><div class="prof">
+    <div class="cover"><div class="av" style="background:#1fb37a">КФ</div><b style="font-size:20px">Команда FLUX</b><div class="cap" style="margin:4px 0 0">24 участника · 5 в сети</div><div class="lock">🔒 сквозное шифрование</div>
+      <div class="tabs"><span class="on">Участники</span><span>Медиа</span><span>Файлы</span><span>Ссылки</span></div></div>
+    <div class="mem">
+      <div><div class="av s on" style="background:#6a5cf2">ДМ</div>Дима <small>владелец</small></div>
+      <div><div class="av s on" style="background:#e5568a">АН</div>Анна <small>админ</small></div>
+      <div><div class="av s" style="background:#f0954a">ИВ</div>Иван <small>был(а) вчера</small></div>
+      <div><div class="av s" style="background:#22a7f0">СК</div>Саша <small>в сети</small></div>
+    </div></div></div><p class="cap">Профиль группы: градиентная шапка, метка шифрования, вкладки и список участников с ролями.</p></div>
+</div>
+</body>
+</html>

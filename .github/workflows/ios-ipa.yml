@@ -1,0 +1,61 @@
+name: iOS IPA (unsigned)
+
+# Builds FLUX for iPhone on a free GitHub macOS runner. The .ipa is unsigned: install it from Windows with
+# Sideloadly (free Apple ID, valid for 7 days) or AltStore. No paid Apple Developer account is needed.
+on:
+  workflow_dispatch:
+    inputs:
+      api_url:
+        description: 'FLUX server API URL reachable from the phone, e.g. https://flux.example.com/api/v1'
+        required: true
+        type: string
+
+jobs:
+  build:
+    runs-on: macos-14
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      # React Native's native build wants real folders, not pnpm's symlinks.
+      - run: echo "node-linker=hoisted" >> .npmrc
+      - run: pnpm install --no-frozen-lockfile
+      - run: pnpm --filter @FLUX/shared run build
+
+      - name: Generate the Xcode project
+        working-directory: apps/mobile
+        env:
+          SIDELOAD: '1'
+          EXPO_PUBLIC_API_URL: ${{ inputs.api_url }}
+        run: npx expo prebuild --platform ios --clean
+
+      - name: Build without signing
+        working-directory: apps/mobile/ios
+        env:
+          SIDELOAD: '1'
+          EXPO_PUBLIC_API_URL: ${{ inputs.api_url }}
+        run: |
+          WORKSPACE=$(ls -d *.xcworkspace | head -1)
+          SCHEME="${WORKSPACE%.xcworkspace}"
+          xcodebuild -workspace "$WORKSPACE" -scheme "$SCHEME" -configuration Release \
+            -sdk iphoneos -destination 'generic/platform=iOS' -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            | tail -n 40
+
+      - name: Pack the .ipa
+        working-directory: apps/mobile/ios
+        run: |
+          APP=$(find build/Build/Products/Release-iphoneos -maxdepth 1 -name '*.app' | head -1)
+          rm -rf Payload && mkdir Payload && cp -R "$APP" Payload/
+          zip -qry FLUX.ipa Payload
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FLUX-ios-unsigned
+          path: apps/mobile/ios/FLUX.ipa

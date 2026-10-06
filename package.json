@@ -1,0 +1,56 @@
+{
+  "name": "FLUX-messenger",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Independent FLUX - Production Ready",
+  "scripts": {
+    "dev": "pnpm --parallel -r run dev",
+    "build": "pnpm --filter @FLUX/shared run build && pnpm --filter @FLUX/server run build && pnpm --filter @FLUX/web run build",
+    "typecheck": "pnpm -r --if-present run typecheck",
+    "lint": "pnpm -r run lint",
+    "format": "pnpm -r run format",
+    "test": "pnpm -r run test",
+    "prisma:generate": "pnpm --filter @FLUX/server run prisma:generate",
+    "prisma:migrate": "pnpm --filter @FLUX/server run prisma:migrate",
+    "prisma:deploy": "pnpm --filter @FLUX/server run prisma:deploy",
+    "prisma:studio": "pnpm --filter @FLUX/server run prisma:studio",
+    "cli:admin": "pnpm --filter @FLUX/server run cli:admin",
+    "cli:user": "pnpm --filter @FLUX/server run cli:user",
+    "cli:vapid": "pnpm --filter @FLUX/server run cli:vapid",
+    "cli:reset-password": "pnpm --filter @FLUX/server run cli:reset-password",
+    "cli:check-config": "pnpm --filter @FLUX/server run cli:check-config",
+    "cli:cleanup": "pnpm --filter @FLUX/server run cli:cleanup",
+    "smoke": "node scripts/smoke-test.mjs",
+    "dev:web": "pnpm --filter @FLUX/web run dev",
+    "dev:server": "pnpm --filter @FLUX/server run dev",
+    "dev:shared": "pnpm --filter @FLUX/shared run dev",
+    "docker:up": "docker compose up -d postgres redis seaweedfs coturn",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f",
+    "install:all": "bash ./scripts/install-all.sh",
+    "reset": "bash ./scripts/reset-project.sh"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^7.1.0",
+    "@typescript-eslint/parser": "^7.1.0",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "prettier": "^3.2.5"
+  },
+  "engines": {
+    "node": ">=22.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "packageManager": "pnpm@9.12.0",
+  "pnpm": {
+    "overrides": {
+      "tar": ">=7.5.21",
+      "multer": ">=2.3.0",
+      "lodash": ">=4.18.0",
+      "@xmldom/xmldom": ">=0.8.15",
+      "postcss": ">=8.5.18",
+      "image-size": "1.2.1"
+    }
+  }
+}

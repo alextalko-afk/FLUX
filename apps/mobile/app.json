@@ -1,0 +1,60 @@
+{
+  "expo": {
+    "name": "FLUX",
+    "slug": "flux",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "backgroundColor": "#0b0d13"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "bundleIdentifier": "com.flux.messenger",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Allow FLUX to access your camera for video calls and photos.",
+        "NSMicrophoneUsageDescription": "Allow FLUX to access your microphone for voice messages and calls.",
+        "NSPhotoLibraryUsageDescription": "Allow FLUX to access your photos to share them in chats.",
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#5a48f0",
+        "foregroundImage": "./assets/adaptive-icon.png"
+      },
+      "package": "com.flux.messenger",
+      "permissions": [
+        "CAMERA",
+        "RECORD_AUDIO",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-secure-store",
+      "expo-notifications",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow FLUX to access your camera."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow FLUX to access your photos.",
+          "cameraPermission": "Allow FLUX to access your camera."
+        }
+      ]
+    ],
+    "backgroundColor": "#0b0d13"
+  }
+}

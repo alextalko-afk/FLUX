@@ -1,0 +1,74 @@
+{
+  "name": "@FLUX/desktop",
+  "version": "1.0.0",
+  "private": true,
+  "main": "dist/main.js",
+  "scripts": {
+    "dev": "electron .",
+    "build": "node build/bundle.cjs && electron-builder",
+    "build:win": "pnpm --filter @FLUX/web build && node build/bundle.cjs && electron-builder --win",
+    "build:mac": "node build/bundle.cjs && electron-builder --mac",
+    "build:linux": "node build/bundle.cjs && electron-builder --linux"
+  },
+  "devDependencies": {
+    "electron": "^29.1.0",
+    "electron-builder": "^24.13.3",
+    "typescript": "^5.4.2",
+    "@types/node": "^20.11.24",
+    "electron-updater": "^6.1.7",
+    "esbuild": "^0.21.5"
+  },
+  "build": {
+    "appId": "com.flux.messenger",
+    "productName": "FLUX",
+    "copyright": "FLUX",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "resources/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "../web/dist",
+        "to": "web"
+      }
+    ],
+    "icon": "resources/icon.png",
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "build/icon.ico",
+      "signAndEditExecutable": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "perMachine": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "FLUX",
+      "deleteAppDataOnUninstall": false
+    },
+    "mac": {
+      "category": "public.app-category.social-networking",
+      "target": [
+        "dmg",
+        "zip"
+      ]
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Network"
+    },
+    "afterPack": "build/afterPack.cjs"
+  },
+  "description": "FLUX messenger",
+  "author": "FLUX",
+  "productName": "FLUX"
+}

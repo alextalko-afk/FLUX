@@ -1,0 +1,154 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: tglike-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-tguser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tgpass}
+      POSTGRES_DB: ${POSTGRES_DB:-tglike}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-tguser} -d ${POSTGRES_DB:-tglike}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - tglike-net
+
+  redis:
+    image: redis:7-alpine
+    container_name: tglike-redis
+    restart: unless-stopped
+    # `noeviction` is required by BullMQ: with an LRU policy Redis may evict
+    # queue/job keys under memory pressure, silently losing jobs. Presence
+    # keys carry their own TTL so they still expire normally.
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy noeviction
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - tglike-net
+
+  # S3-compatible local object storage for development.
+  #
+  # TIP: MinIO removed its images from Docker Hub in 2025 (`minio/minio` now
+  # returns 404). This stack therefore ships SeaweedFS, whose S3 gateway speaks
+  # the exact same protocol. If you prefer MinIO, use the override file:
+  #   docker compose -f docker-compose.yml -f docker/docker-compose.minio.yml up -d
+  # The S3 port is 9000 for both, so no application config has to change.
+  seaweedfs:
+    image: chrislusf/seaweedfs:3.73
+    container_name: tglike-seaweedfs
+    restart: unless-stopped
+    command: server -s3 -dir=/data -s3.port=9000 -s3.allowEmptyFolder=false -volume.max=0
+    ports:
+      - "9000:9000"
+      - "8888:8888"
+    volumes:
+      - seaweedfs_data:/data
+    networks:
+      - tglike-net
+
+  # Self-hosted TURN/STUN server for WebRTC. Ports are published explicitly so
+  # the container works on every platform (Docker Desktop included). For
+  # production you may prefer `network_mode: host` on a Linux VPS.
+  coturn:
+    image: coturn/coturn:latest
+    container_name: tglike-coturn
+    restart: unless-stopped
+    ports:
+      - "3478:3478"
+      - "3478:3478/udp"
+      - "49160-49200:49160-49200/udp"
+    volumes:
+      - ./docker/coturn/turnserver.conf:/etc/coturn/turnserver.conf:ro
+    command: -c /etc/coturn/turnserver.conf
+    networks:
+      - tglike-net
+
+  # SFU for group calls. Optional: `docker compose --profile calls up -d livekit`, then set
+  # LIVEKIT_URL=ws://localhost:7880 plus LIVEKIT_API_KEY / LIVEKIT_API_SECRET (32+ characters) in .env.
+  # On a VPS publish the UDP range and set rtc.use_external_ip in docker/livekit/livekit.yaml.
+  livekit:
+    image: livekit/livekit-server:latest
+    container_name: tglike-livekit
+    profiles: ["calls"]
+    restart: unless-stopped
+    # --node-ip: the published ports are what a browser on this machine can reach, not the container address.
+    command: --config /etc/livekit.yaml --node-ip ${LIVEKIT_NODE_IP:-127.0.0.1}
+    environment:
+      LIVEKIT_KEYS: "${LIVEKIT_API_KEY:-devkey}: ${LIVEKIT_API_SECRET:-change-me-to-a-long-random-secret-0123456789}"
+    ports:
+      - "7880:7880"
+      - "7881:7881"
+      - "50000-50100:50000-50100/udp"
+    volumes:
+      - ./docker/livekit/livekit.yaml:/etc/livekit.yaml:ro
+    networks:
+      - tglike-net
+
+  # Reverse proxy that exposes the whole stack on a single port (80) and
+  # forwards the SPA, the REST API and the WebSocket upgrade.
+  # `host.docker.internal` needs an explicit mapping on Linux hosts.
+  # Local SMTP sink with a web inbox (http://localhost:8025). Optional: start it
+  # with `docker compose --profile mail up -d mailpit`, then set SMTP_HOST=localhost
+  # and SMTP_PORT=1025 in .env to see the e-mails the server sends.
+  # Virus scanner for uploads. Optional: start it with `docker compose --profile antivirus up -d clamav`
+  # and set CLAMAV_HOST=localhost in .env. The first start downloads the signatures and takes a few minutes.
+  clamav:
+    image: clamav/clamav:stable
+    container_name: tglike-clamav
+    profiles: ["antivirus"]
+    restart: unless-stopped
+    ports:
+      - "3310:3310"
+    volumes:
+      - clamav_data:/var/lib/clamav
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: tglike-mailpit
+    profiles: ["mail"]
+    restart: unless-stopped
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - tglike-net
+
+  nginx:
+    image: nginx:alpine
+    container_name: tglike-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - postgres
+      - redis
+      - seaweedfs
+    networks:
+      - tglike-net
+
+volumes:
+  postgres_data:
+  redis_data:
+  seaweedfs_data:
+  clamav_data:
+
+networks:
+  tglike-net:
+    driver: bridge

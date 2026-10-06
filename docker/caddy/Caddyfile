@@ -1,0 +1,36 @@
+# Production reverse proxy. DOMAIN and ACME_EMAIL come from the environment (docker-compose.prod.yml).
+# Caddy obtains and renews the certificates by itself.
+{
+	email {$ACME_EMAIL}
+}
+
+{$DOMAIN} {
+	encode zstd gzip
+
+	# API and WebSocket gateway
+	@api path /api/* /ws /ws/*
+	handle @api {
+		reverse_proxy server:3000
+	}
+
+	# Web application
+	handle {
+		reverse_proxy web:80
+	}
+
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+	}
+}
+
+# Object storage for presigned upload/download links (S3_PUBLIC_ENDPOINT=https://s3.$DOMAIN).
+s3.{$DOMAIN} {
+	reverse_proxy seaweedfs:9000
+}
+
+# LiveKit signalling for group calls (only used with `--profile calls`; LIVEKIT_URL=wss://lk.$DOMAIN).
+lk.{$DOMAIN} {
+	reverse_proxy host.docker.internal:7880
+}
